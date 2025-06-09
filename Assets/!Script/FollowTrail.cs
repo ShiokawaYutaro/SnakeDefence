@@ -2,13 +2,14 @@ using UnityEngine;
 
 public class TailFollow : MonoBehaviour
 {
-    public TrailRecorder targetTrail;
+    private TrailRecorder targetTrail;
     public int followIndex = 10;
     float followSpeed = 50f;
     float rotationSpeed = 50f;
 
     void Update()
     {
+        targetTrail = transform.parent.Find("body").GetComponent<TrailRecorder>();
         if (targetTrail.trail.Count > followIndex)
         {
             var point = targetTrail.trail[followIndex];

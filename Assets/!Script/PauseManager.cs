@@ -57,8 +57,8 @@ public class PauseManager : MonoBehaviour
                 pauseType = PauseType.HomePause;
                 OnKey = true;
             }
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            //Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = true;
 
             PauseScreen.SetActive(false);
             Time.timeScale = 1;
@@ -73,7 +73,7 @@ public class PauseManager : MonoBehaviour
                 pauseType = PauseType.Normal;
                 OnKey = true;
             }
-            Cursor.lockState = CursorLockMode.Confined;
+            //Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
 
             PauseScreen.SetActive(true);

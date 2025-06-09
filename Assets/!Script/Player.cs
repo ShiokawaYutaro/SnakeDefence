@@ -8,7 +8,7 @@ public class Player : Character
     //          �}�l�[�W���[�̒�`
     //=============================================================
 
-    public int Num;
+    //public int Num;
 
     ////�|�[�Y��ʗp
     //public GameObject pause;
@@ -53,10 +53,8 @@ public class Player : Character
     protected override void Start()
     {
         base.Start();
-        NormalSpeed = 2;
-
-        RunSpeed = 5;
         MaxHp = 100f;
+        speed = 10;
     }
 
     // Update is called once per frame
@@ -81,12 +79,12 @@ public class Player : Character
     //�֐�===================================================================================
     public void TDMove()
     {
-        rb.AddForce(Vector3.down * 9.8f, ForceMode.Force);
+        //rb.AddForce(Vector3.down * 9.8f, ForceMode.Force);
 
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveZ = Input.GetAxisRaw("Vertical");
             // 移動
-            rb.velocity = MoveForward.normalized * speed + new Vector3(0, rb.velocity.y, 0);
+            rb.velocity = new Vector3(moveX, rb.velocity.y, moveZ).normalized * speed;
 
     }
 

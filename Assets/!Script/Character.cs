@@ -9,11 +9,6 @@ public abstract class Character : MonoBehaviour
     protected float HP;
     protected float MaxHp;
     protected float speed;
-    protected float SlowSpeed;
-    protected float NormalSpeed;
-    protected float RunSpeed;
-    protected float Stamina;
-    protected float MaxStamina;
 
     protected Animator animator;
     protected Animator SkillAnim;
@@ -24,7 +19,6 @@ public abstract class Character : MonoBehaviour
     protected virtual void Start()
     {
         HP = MaxHp;
-        Stamina = MaxStamina;
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
     }
