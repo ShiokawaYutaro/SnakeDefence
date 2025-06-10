@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Character
 {
     private float moveSpeed = 3f;
     private float viewAngle = 130f;
@@ -12,35 +14,52 @@ public class Enemy : MonoBehaviour
     private float turnSpeed = 90f;
     private float turnDuration = 1.0f;
 
-    private float chaseViewDistance = 10f; // ← 見つける距離を伸ばしたい場合ここ
-    private float chaseViewAngle = 120f;
-    private string playerTag = "Player";
-
-    private float snakeAmplitude = 1f;
-    private float snakeFrequency = 3f;
-    private float sideCheckDistance = 2.0f;
-    private float swayAvoidStrength = 1.0f;
-
-    private float snakeTimer = 0f;
-
-    private Rigidbody rb;
     private GameObject player;
 
-    private bool isTurning = false;
-    private float turnTimeRemaining = 0f;
-    private float turnDirection = 0f;
-    private float lastTurnDirection = 0f;
+    public Image healthImage;
+    float duration = 0.2f;
+    float HcurrentRate = 1.0f;
 
-    private int layerMask;
 
-    void Start()
+
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        player = GameObject.FindGameObjectWithTag(playerTag);
+        player = GameObject.FindGameObjectWithTag("Player");
+        base.Start();
+        MaxHp = 10f;
+        speed = 10;
     }
 
-    void FixedUpdate()
+    protected override void FixedUpdate()
     {
+      
+    }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Snake"))
+        {
+            SetDamage(1);
+        }
+        
+    }
+
+    private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)
+    {
+        // 0〜1の範囲に制限
+        targetRate = Mathf.Clamp01(targetRate);
+
+        // DOTweenでFillAmountのアニメーション
+        image.DOFillAmount(targetRate, duration);
+
+        // currentRateの更新
+        currentRate = targetRate;
+    }
+
+    public void SetDamage(float _damage)
+    {
+        HP -= _damage;
+        float targetRate = HcurrentRate - _damage / MaxHp;
+        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
     }
 }
