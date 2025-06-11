@@ -14,6 +14,6 @@ public class LeftStickTest : MonoBehaviour
 
         // 左スティック入力取得
         var leftStickValue = current.leftStick.ReadValue();
-        Debug.Log($"移動量：{leftStickValue}");
+       // Debug.Log($"移動量：{leftStickValue}");
     }
 }

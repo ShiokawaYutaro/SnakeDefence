@@ -81,10 +81,20 @@ public class Player : Character
     {
         //rb.AddForce(Vector3.down * 9.8f, ForceMode.Force);
 
-            float moveX = Input.GetAxisRaw("Horizontal");
-            float moveZ = Input.GetAxisRaw("Vertical");
-            // 移動
-            rb.velocity = new Vector3(moveX, rb.velocity.y, moveZ).normalized * speed;
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveZ = Input.GetAxisRaw("Vertical");
+
+        // 移動
+        Vector3 moveDir = new Vector3(moveX, 0f, moveZ).normalized;
+        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
+
+        // 回転（移動方向があるときのみ）
+        if (moveDir.magnitude > 0.01f)
+        {
+            Quaternion toRotation = Quaternion.LookRotation(moveDir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+        }
+
 
     }
 
