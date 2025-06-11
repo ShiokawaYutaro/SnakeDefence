@@ -7,7 +7,7 @@ public class Player : Character
     //=============================================================
     //          �}�l�[�W���[�̒�`
     //=============================================================
-
+    [SerializeField] GameObject damageNotation;
     //public int Num;
 
     ////�|�[�Y��ʗp
@@ -69,7 +69,7 @@ public class Player : Character
         {
             SetDamage(1f);
         }
-
+        healthImage.transform.LookAt(Camera.main.transform.position);
     }
 
 
@@ -119,6 +119,10 @@ public class Player : Character
         HP -= _damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+
+        GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
+        damageText.GetComponent<Text>().text = _damage.ToString();
+        Destroy(damageText, 1);
     }
 
     //ステータス関係------------------------------------------------------------------

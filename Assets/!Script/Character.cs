@@ -13,7 +13,6 @@ public abstract class Character : MonoBehaviour
     protected Animator animator;
     protected Animator SkillAnim;
     protected Animator ModeAnim;
-    protected Transform target;
 
     // Start is called before the first frame update
     protected virtual void Start()
