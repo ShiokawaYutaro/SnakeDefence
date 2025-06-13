@@ -9,6 +9,7 @@ public abstract class Character : MonoBehaviour
     protected float HP;
     protected float MaxHp;
     protected float speed;
+    public float damage { get; protected set; }
 
     protected Animator animator;
     protected Animator SkillAnim;

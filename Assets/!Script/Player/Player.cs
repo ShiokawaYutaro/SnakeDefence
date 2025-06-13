@@ -52,9 +52,9 @@ public class Player : Character
     // Start is called before the first frame update
     protected override void Start()
     {
-        base.Start();
         MaxHp = 100f;
         speed = 10;
+        base.Start();
     }
 
     // Update is called once per frame
@@ -98,8 +98,18 @@ public class Player : Character
 
     }
 
-    void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
+        if(other.gameObject.name == "ピッケル")
+        {
+            Enemy enemy = other.transform.root.GetComponent<Enemy>();
+            if (enemy.attack)
+            {
+                SetDamage(enemy.damage);
+                enemy.attack = false;
+            }
+            
+        }
     }
 
     private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)

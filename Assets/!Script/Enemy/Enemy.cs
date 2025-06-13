@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
-using Cysharp.Threading.Tasks;
 
 public class Enemy : Character
 {
@@ -16,22 +13,27 @@ public class Enemy : Character
     [SerializeField] private GameObject damageNotation;
     bool atkDelay;
 
-    float viewAngle = 120f;
+    float viewAngle = 180f;
     int rayCount = 20;
-    float rayDistance = 1f;
+    float rayDistance = 1.5f;
+
+
+    public  bool attack;
+    bool playAnim;
+    public bool dead;
 
     protected override void Start()
     {
         target = GameObject.Find("家");
-        base.Start();
         MaxHp = 100f;
         speed = 3;
+        damage = 10;
+        base.Start();
     }
 
     protected override void FixedUpdate()
     {
         healthImage.transform.LookAt(Camera.main.transform.position);
-        
        // rb.velocity = transform.forward * speed;
 
         if(rb.velocity.magnitude >= 0.01f)
@@ -45,52 +47,82 @@ public class Enemy : Character
 
     void ViewAction()
     {
-        Vector3 viewPos = new Vector3(transform.position.x,transform.position.y + 1,transform.position.z);
-        Ray ray = new Ray(viewPos, transform.forward);
-
+        Vector3 viewPos = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
         float halfAngle = viewAngle / 2f;
+
+        bool hitTarget = false; // ← ループ外で初期化！
 
         for (int i = 0; i < rayCount; i++)
         {
-            // -halfAngle ～ +halfAngle の範囲で角度を振る
-            float t = (float)i / (rayCount - 1); // 0〜1
+            float t = (float)i / (rayCount - 1);
             float angle = Mathf.Lerp(-halfAngle, halfAngle, t);
-
-            // 自分の forward をベースに角度を加える（Y軸回転）
             Quaternion rotation = Quaternion.Euler(0, angle, 0);
             Vector3 dir = rotation * transform.forward;
-            if (Physics.Raycast(viewPos,dir , out RaycastHit hit, rayDistance))
+
+            if (Physics.Raycast(viewPos, dir, out RaycastHit hit, rayDistance))
             {
-                if (hit.collider.tag == "Player")
+
+                // プレイヤーを見つけた
+                if (hit.collider.CompareTag("Player") && hit.collider.name == "body")
                 {
                     rb.velocity = Vector3.zero;
                     animator.SetBool("run", false);
                     animator.SetBool("attack", true);
-                    transform.LookAt(hit.collider.transform.position);
+                    playAnim = true;
+                    hitTarget = true;
+
+                    // Y軸だけ回転
+                    Vector3 targetDir = hit.collider.transform.position - transform.position;
+                    targetDir.y = 0f;
+
+                    if (targetDir != Vector3.zero)
+                    {
+                        Quaternion targetRotation = Quaternion.LookRotation(targetDir);
+                        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+                    }
+
+                    break; // ← プレイヤーを見つけたらそれ以上チェックしない
                 }
 
-                //else if (hit.collider.transform.parent.name == "家")
-                //{
-                //    rb.velocity = Vector3.zero;
-                //    animator.SetBool("run", false);
-                //    animator.SetBool("attack", true);
-                //    transform.LookAt(target.transform.position);
-                //}
-
-
-                else
+                // 家を見つけた
+                else if (hit.collider.transform.parent != null && hit.collider.transform.parent.gameObject == target)
                 {
-                    rb.velocity = transform.forward * speed;
-                    transform.LookAt(target.transform.position);
+                    rb.velocity = Vector3.zero;
+                    animator.SetBool("run", false);
+                    animator.SetBool("attack", true);
+                    playAnim = true;
+                    hitTarget = true;
+
+                    Vector3 targetDir = hit.collider.transform.position - transform.position;
+                    targetDir.y = 0f;
+
+                    if (targetDir != Vector3.zero)
+                    {
+                        Quaternion targetRotation = Quaternion.LookRotation(targetDir);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+                    }
+
+                    break;
                 }
             }
-            else
-            {
-                rb.velocity = transform.forward * speed;
-                transform.LookAt(target.transform.position);
-            }
+
+            Debug.DrawRay(viewPos, dir * rayDistance, Color.red);
         }
-        Debug.DrawRay(ray.origin, ray.direction, Color.red);
+
+        // 攻撃対象が見つからなかった場合、移動
+        if (!hitTarget && !playAnim)
+        {
+            rb.velocity = transform.forward * speed;
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(target.transform.position - transform.position),
+                Time.deltaTime * 5f
+            );
+
+            animator.SetBool("run", true);
+            animator.SetBool("attack", false);
+        }
+
     }
 
     private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)
@@ -114,5 +146,27 @@ public class Enemy : Character
         GameObject damageText = Instantiate(damageNotation,transform.Find("UI/healthImage"));
         damageText.GetComponent<Text>().text = _damage.ToString();
         Destroy(damageText , 1);
+        if(HP < 0)
+        {
+            animator.SetBool("dead", true);
+            dead = true;
+        }
+    }
+
+    public void OnAttack()
+    {
+        attack = true;
+    }
+    public void OffAttack()
+    {
+        attack = false;
+    }
+    public void OnAnim()
+    {
+        playAnim = true;
+    }
+    public void OffAnim()
+    {
+        playAnim = false;
     }
 }
