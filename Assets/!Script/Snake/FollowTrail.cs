@@ -31,7 +31,7 @@ public class TailFollow : MonoBehaviour
 
     private async void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.name == "‚Ú‚¤‚¯‚ñ‚µ‚á" && !atkDelay)
+        if (other.gameObject.tag == "Enemy" && !atkDelay)
         {
             Enemy enemy = other.gameObject.GetComponent<Enemy>();
             enemy.SetDamage(player.damage);

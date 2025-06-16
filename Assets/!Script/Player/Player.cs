@@ -20,7 +20,9 @@ public class Player : Character
     public int poison;
     public int fire;
 
-
+    int LVL = 1;
+    float maxLVLGauge = 2;
+    float currentLVLGauge = 0;
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -40,6 +42,10 @@ public class Player : Character
         TDMove();
 
         healthImage.transform.LookAt(Camera.main.transform.position);
+
+        Text text = GameObject.Find("lvlText").GetComponent<Text>();
+        text.text = "Lv" + LVL.ToString();
+        healthText.text = HP.ToString();
     }
 
 
@@ -116,42 +122,28 @@ public class Player : Character
             down = true;
         }
     }
+    public void LVLGauge(float addGauge)
+    {
+        Image gauge = GameObject.Find("lvlGauge").GetComponent<Image>();
+        
 
-    //UI関係------------------------------------------------------------------------
-   
+        if (currentLVLGauge == maxLVLGauge) { LVLUP(); }
+        gauge.DOFillAmount((currentLVLGauge + addGauge) / maxLVLGauge,duration);
+        currentLVLGauge = currentLVLGauge + addGauge;
 
-    ////�Q�[���I���֌W====================================================================================
-    //public void GameResult()
-    //{
-    //    GameResultSet = true;
-    //    result.SetActive(true);
-
-    //    Debug.Log(Cursor.visible);
-
-    //    Text KillCount = GameObject.Find("���j��").GetComponent<Text>();
-    //    KillCount.text = "���j��\n" + Enemy.EnemyDethCout.ToString();
-
-    //    Text ClearTime = GameObject.Find("�N���A����").GetComponent<Text>();
-    //    ClearTime.text = "�N���A����\n" + (300 - Boss.EndTime).ToString("0");
-    //}
-
-    //public void ReStart()
-    //{
-    //    SceneManager.LoadScene("Load");
-    //}
-
-    //public void GameStart()
-    //{
-    //    SceneManager.LoadScene("main");
-    //}
-    
-    //public void LoadFlash()
-    //{
-    //    flash = GameObject.Find("�t���b�V��").GetComponent<Image>();
-    //    flash.DOFade(1.0f, 1.0f);
-    //}
-    //public void GameStop()
-    //{
-    //   // UnityEditor.EditorApplication.isPlaying = false;
-    //}
+        Debug.Log(currentLVLGauge);
+        
+    }
+    void LVLUP()
+    {       
+        LVL++;
+        SkillCardManager.instance.DrawCard();
+        currentLVLGauge -= maxLVLGauge;
+        maxLVLGauge *= 1.5f;
+        TailFollowManager.instance.AddTrail(3);
+        MaxHp = MaxHp * LVL;
+        HP = MaxHp;
+        damage = damage * LVL;
+        speed = speed + 0.01f * LVL;
+    }
 }

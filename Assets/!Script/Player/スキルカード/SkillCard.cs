@@ -26,6 +26,7 @@ public class SkillCard : MonoBehaviour
         {
             Destroy(transform.parent.GetChild(i).gameObject);
         }
+        SkillCardManager.instance.skillSelect = true;
         SkillCardManager.DeleteCard();
     }
 }

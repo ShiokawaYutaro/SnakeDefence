@@ -19,10 +19,7 @@ public class TailFollowManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            
-        }
+
     }
 
     public void AddTrail(int trailCount)
@@ -34,6 +31,7 @@ public class TailFollowManager : MonoBehaviour
 
             // TailFollowの新しいオブジェクトを生成して親にセット
             GameObject newTail = Instantiate(tailFollowPrefab, tailParent);
+            newTail.transform.position = Vector3.zero;
             TailFollow tailFollowComp = newTail.GetComponent<TailFollow>();
 
             // 新しいTailFollowに追従するトレイル番号をセット

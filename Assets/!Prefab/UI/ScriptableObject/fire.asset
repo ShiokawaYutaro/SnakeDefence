@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: fire
   m_EditorClassIdentifier: 
   icon: {fileID: 21300000, guid: 0532f22adfdf7244fb6346cc65d30aea, type: 3}
-  cardName: 
+  cardName: "\u30D5\u30A1\u30A4\u30A2"

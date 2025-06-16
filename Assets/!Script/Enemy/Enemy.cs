@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Enemy : Character
 {
-    private GameObject player;
+    private Player player;
     GameObject target;
     public Image healthImage;
     float duration = 0.2f;
@@ -25,8 +25,9 @@ public class Enemy : Character
 
     protected override void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         target = GameObject.Find("家");
-        MaxHp = 100f;
+        MaxHp = 10f;
         
         damage = 10;
         base.Start();
@@ -46,7 +47,8 @@ public class Enemy : Character
         if (HP < 0)
         {
             animator.SetBool("dead", true);
-            
+            dead = true;
+            rb.isKinematic = true;
         }
 
         ViewAction();
@@ -146,6 +148,7 @@ public class Enemy : Character
 
     public void SetDamage(float _damage)
     {
+        if(dead) return;
         HP -= _damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
@@ -158,6 +161,7 @@ public class Enemy : Character
 
     public async void SetAttributeDamage(float _damage, int attribute , Color32 color)
     {
+        if (dead) return;
         for (int i = 0; i < attribute; i++)
         {
             HP -= _damage;
@@ -191,7 +195,7 @@ public class Enemy : Character
     }
     public void Dead()
     {
-        TailFollowManager.instance.AddTrail(3);
+        player.LVLGauge(1);
         Destroy(gameObject, 1);
     }
 }
