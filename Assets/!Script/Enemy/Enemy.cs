@@ -44,7 +44,7 @@ public class Enemy : Character
             animator.SetBool("attack", false);
             animator.SetBool("run", true);
         }
-        if (HP < 0)
+        if (HP <= 0)
         {
             animator.SetBool("dead", true);
             dead = true;
@@ -61,6 +61,7 @@ public class Enemy : Character
 
         bool hitTarget = false; // ← ループ外で初期化！
 
+       
         for (int i = 0; i < rayCount; i++)
         {
             float t = (float)i / (rayCount - 1);
@@ -74,7 +75,8 @@ public class Enemy : Character
                 // プレイヤーを見つけた
                 if (hit.collider.CompareTag("Player") && hit.collider.name == "body")
                 {
-                    rb.velocity = Vector3.zero;
+                    if (rb.velocity != Vector3.zero) { rb.velocity = Vector3.zero; }
+                    
                     animator.SetBool("run", false);
                     animator.SetBool("attack", true);
                     playAnim = true;
@@ -121,7 +123,8 @@ public class Enemy : Character
         // 攻撃対象が見つからなかった場合、移動
         if (!hitTarget && !playAnim)
         {
-            rb.velocity = transform.forward * speed;
+            if (rb.velocity != Vector3.zero) { rb.velocity = transform.forward * speed; }
+            
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 Quaternion.LookRotation(target.transform.position - transform.position),
@@ -196,6 +199,6 @@ public class Enemy : Character
     public void Dead()
     {
         player.LVLGauge(1);
-        Destroy(gameObject, 1);
+        Destroy(gameObject, 2);
     }
 }

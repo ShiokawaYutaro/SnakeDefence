@@ -125,11 +125,10 @@ public class Player : Character
     public void LVLGauge(float addGauge)
     {
         Image gauge = GameObject.Find("lvlGauge").GetComponent<Image>();
-        
 
-        if (currentLVLGauge == maxLVLGauge) { LVLUP(); }
-        gauge.DOFillAmount((currentLVLGauge + addGauge) / maxLVLGauge,duration);
-        currentLVLGauge = currentLVLGauge + addGauge;
+        currentLVLGauge += addGauge;
+        if (currentLVLGauge >= maxLVLGauge) { LVLUP(); }
+        gauge.DOFillAmount(currentLVLGauge / maxLVLGauge,duration);
 
         Debug.Log(currentLVLGauge);
         
