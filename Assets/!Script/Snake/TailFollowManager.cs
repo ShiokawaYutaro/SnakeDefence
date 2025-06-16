@@ -3,6 +3,7 @@ using static TrailRecorder;
 
 public class TailFollowManager : MonoBehaviour
 {
+    static public TailFollowManager instance = null;
     public GameObject tailFollowPrefab;  // TailFollowプレハブをインスペクターでセット
     public Transform tailParent;         // TailFollowを置く親（例えば自分の子など）
     private TrailRecorder trailRecorder;
@@ -11,6 +12,7 @@ public class TailFollowManager : MonoBehaviour
 
     void Start()
     {
+        instance = this;
         trailRecorder = transform.GetComponent<TrailRecorder>();
         AddTrail(5);
     }

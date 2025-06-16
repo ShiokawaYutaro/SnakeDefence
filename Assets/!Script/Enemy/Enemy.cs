@@ -1,4 +1,5 @@
-﻿using DG.Tweening;
+﻿using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,13 +27,14 @@ public class Enemy : Character
     {
         target = GameObject.Find("家");
         MaxHp = 100f;
-        speed = 3;
+        
         damage = 10;
         base.Start();
     }
 
     protected override void FixedUpdate()
     {
+        speed = 3;
         healthImage.transform.LookAt(Camera.main.transform.position);
        // rb.velocity = transform.forward * speed;
 
@@ -40,6 +42,11 @@ public class Enemy : Character
         {
             animator.SetBool("attack", false);
             animator.SetBool("run", true);
+        }
+        if (HP < 0)
+        {
+            animator.SetBool("dead", true);
+            
         }
 
         ViewAction();
@@ -142,15 +149,28 @@ public class Enemy : Character
         HP -= _damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
-
-        GameObject damageText = Instantiate(damageNotation,transform.Find("UI/healthImage"));
+        GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
+        damageText.GetComponent<Text>().color = new Color32(255,255,255,255) ;
         damageText.GetComponent<Text>().text = _damage.ToString();
-        Destroy(damageText , 1);
-        if(HP < 0)
+        Destroy(damageText, 1);
+
+    }
+
+    public async void SetAttributeDamage(float _damage, int attribute , Color32 color)
+    {
+        for (int i = 0; i < attribute; i++)
         {
-            animator.SetBool("dead", true);
-            dead = true;
+            HP -= _damage;
+            float targetRate = HcurrentRate - _damage / MaxHp;
+            UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+            GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
+            damageText.GetComponent<Text>().color = color;
+            damageText.GetComponent<Text>().text = _damage.ToString();
+            Destroy(damageText, 1);
+            await UniTask.Delay(2000);
         }
+
+        
     }
 
     public void OnAttack()
@@ -168,5 +188,10 @@ public class Enemy : Character
     public void OffAnim()
     {
         playAnim = false;
+    }
+    public void Dead()
+    {
+        TailFollowManager.instance.AddTrail(3);
+        Destroy(gameObject, 1);
     }
 }

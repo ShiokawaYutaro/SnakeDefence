@@ -8,45 +8,17 @@ public class Player : Character
     //          �}�l�[�W���[�̒�`
     //=============================================================
     [SerializeField] GameObject damageNotation;
-    //public int Num;
 
-    ////�|�[�Y��ʗp
-    //public GameObject pause;
-    ////�|�[�Y��ʂ̌��݂̃��C���[
-    //int currentLayer;
-    //public GameObject Layer1;
-    //public GameObject Layer2;
-    //public GameObject Layer3;
-
-    //[SerializeField] GameObject result;
-
-    ////�|�����Ƃ��̃X�e�[�^�X�|�C���g
-    //static public int StatusPoint;
-    //static public int LVL = 1;
-    //static public int LVLPoint;
-
-    //PlayerAnimation
     bool down;
-
-    float animTime;
-
-    Vector3 latestPos;
-
-    Vector3 moveDirection = Vector3.zero;
-
-    Vector3 CameraForward;
-    Vector3 MoveForward;
+    
 
     //public GameObject HPbar;
     public Image healthImage;
+    [SerializeField]Text healthText;
     float duration = 0.2f;
     float HcurrentRate = 1.0f;
-
-    ////���񂾃p�[�e�B�N��
-    //[SerializeField] ParticleSystem Exp;
-
-    //�X�L�������t���O
-    //UI-------------------------------------------------------------
+    public int poison;
+    public int fire;
 
 
     // Start is called before the first frame update
@@ -54,6 +26,8 @@ public class Player : Character
     {
         MaxHp = 100f;
         speed = 10;
+        damage = 1;
+
         base.Start();
     }
 
@@ -65,10 +39,6 @@ public class Player : Character
         
         TDMove();
 
-        if (Input.GetKey(KeyCode.P))
-        {
-            SetDamage(1f);
-        }
         healthImage.transform.LookAt(Camera.main.transform.position);
     }
 
@@ -129,6 +99,8 @@ public class Player : Character
         HP -= _damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+
+        healthText.text = HP.ToString();
 
         GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
         damageText.GetComponent<Text>().text = _damage.ToString();

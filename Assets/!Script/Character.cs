@@ -6,7 +6,7 @@ public abstract class Character : MonoBehaviour
     protected Rigidbody rb;
 
     //ステータス
-    protected float HP;
+    public float HP { get; protected set; }
     protected float MaxHp;
     protected float speed;
     public float damage { get; protected set; }

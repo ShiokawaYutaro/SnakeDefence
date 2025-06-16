@@ -31,6 +31,5 @@ public class SkillCardManager : MonoBehaviour
     public static void DeleteCard()
     {
         cardList.Clear();
-        
     }
 }

@@ -6,14 +6,22 @@ using UnityEngine.UI;
 public class SkillCard : MonoBehaviour
 {
     Image image;
+    string cardName;
+    Player player;
     public void Initialize(SkillCardData data)
     {
         image = GetComponent<Image>();
         image.sprite = data.icon;
+        cardName = data.cardName;
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
 
     public void OnClick()
     {
+        //この名前のスキルなら
+        if(cardName == "ポイズン") { player.poison++; }
+        if(cardName == "ファイア") { player.fire++; }
+
         for (int i = 0; i < transform.parent.childCount; i++)
         {
             Destroy(transform.parent.GetChild(i).gameObject);
