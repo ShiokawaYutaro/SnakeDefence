@@ -7,6 +7,10 @@ public class Enemy : Character
 {
     private Player player;
     GameObject target;
+    GameObject wayPoint1;
+    GameObject wayPoint2;
+    bool onWayPoint1;
+    bool onWayPoint2;
     public Image healthImage;
     float duration = 0.2f;
     float HcurrentRate = 1.0f;
@@ -14,7 +18,7 @@ public class Enemy : Character
     [SerializeField] private GameObject damageNotation;
     bool atkDelay;
 
-    float viewAngle = 180f;
+    float viewAngle = 360;
     int rayCount = 20;
     float rayDistance = 1.5f;
 
@@ -23,21 +27,27 @@ public class Enemy : Character
     bool playAnim;
     public bool dead;
 
+    private Transform lastTarget = null;
+    private bool isChasingPlayer = false;
+
     protected override void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         target = GameObject.Find("家");
-        MaxHp = 10f;
+        MaxHp = Random.Range(10,30) * LVL;
         
         damage = 10;
         base.Start();
+        wayPoint1 = GameObject.Find("WayPoint1");
+        wayPoint2 = GameObject.Find("WayPoint2");
     }
 
     protected override void FixedUpdate()
     {
+        if (dead) return;
         speed = 3;
         healthImage.transform.LookAt(Camera.main.transform.position);
-       // rb.velocity = transform.forward * speed;
+        rb.velocity = transform.forward * speed;
 
         if(rb.velocity.magnitude >= 0.01f)
         {
@@ -56,7 +66,7 @@ public class Enemy : Character
 
     void ViewAction()
     {
-        Vector3 viewPos = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
+        Vector3 viewPos = new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z);
         float halfAngle = viewAngle / 2f;
 
         bool hitTarget = false; // ← ループ外で初期化！
@@ -72,18 +82,18 @@ public class Enemy : Character
             if (Physics.Raycast(viewPos, dir, out RaycastHit hit, rayDistance))
             {
 
-                // プレイヤーを見つけた
                 if (hit.collider.CompareTag("Player") && hit.collider.name == "body")
                 {
-                    if (rb.velocity != Vector3.zero) { rb.velocity = Vector3.zero; }
-                    
+                    rb.velocity = Vector3.zero;
                     animator.SetBool("run", false);
                     animator.SetBool("attack", true);
                     playAnim = true;
                     hitTarget = true;
 
-                    // Y軸だけ回転
-                    Vector3 targetDir = hit.collider.transform.position - transform.position;
+                    lastTarget = hit.collider.transform;
+                    isChasingPlayer = true;
+
+                    Vector3 targetDir = lastTarget.position - transform.position;
                     targetDir.y = 0f;
 
                     if (targetDir != Vector3.zero)
@@ -92,8 +102,9 @@ public class Enemy : Character
                         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
                     }
 
-                    break; // ← プレイヤーを見つけたらそれ以上チェックしない
+                    break;
                 }
+
 
                 // 家を見つけた
                 else if (hit.collider.transform.parent != null && hit.collider.transform.parent.gameObject == target)
@@ -121,15 +132,63 @@ public class Enemy : Character
         }
 
         // 攻撃対象が見つからなかった場合、移動
-        if (!hitTarget && !playAnim)
+        if (!hitTarget)
         {
+            if (isChasingPlayer && lastTarget != null)
+            {
+                // プレイヤーを追い続ける
+                Vector3 chaseDir = lastTarget.position - transform.position;
+                chaseDir.y = 0f;
+
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    Quaternion.LookRotation(chaseDir),
+                    Time.deltaTime * 5f
+                );
+
+                rb.velocity = transform.forward * speed;
+
+                animator.SetBool("run", true);
+                animator.SetBool("attack", false);
+
+                // プレイヤーとの距離が一定以上離れたら追跡やめる
+                float dist = Vector3.Distance(transform.position, lastTarget.position);
+                if (dist > 5f)
+                {
+                    isChasingPlayer = false;
+                    lastTarget = null;
+                }
+
+                return; // WayPoint 処理に入らないよう return
+            }
+
             if (rb.velocity != Vector3.zero) { rb.velocity = transform.forward * speed; }
-            
-            transform.rotation = Quaternion.Slerp(
+
+            if (!onWayPoint1)
+            {
+                transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(wayPoint1.transform.position - transform.position),
+                Time.deltaTime * 5f
+                );
+            }
+            if (onWayPoint1)
+            {
+                transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(wayPoint2.transform.position - transform.position),
+                Time.deltaTime * 5f
+                );
+            }
+            if (onWayPoint2)
+            {
+                transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 Quaternion.LookRotation(target.transform.position - transform.position),
                 Time.deltaTime * 5f
-            );
+                );
+            }
+
 
             animator.SetBool("run", true);
             animator.SetBool("attack", false);
@@ -180,6 +239,11 @@ public class Enemy : Character
         
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.name == "WayPoint1") { onWayPoint1 = true; }
+        if(other.gameObject.name == "WayPoint2") { onWayPoint2 = true; }
+    }
     public void OnAttack()
     {
         attack = true;

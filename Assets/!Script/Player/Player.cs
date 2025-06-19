@@ -20,7 +20,6 @@ public class Player : Character
     public int poison;
     public int fire;
 
-    int LVL = 1;
     float maxLVLGauge = 2;
     float currentLVLGauge = 0;
     // Start is called before the first frame update
@@ -57,19 +56,7 @@ public class Player : Character
     {
         //rb.AddForce(Vector3.down * 9.8f, ForceMode.Force);
 
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveZ = Input.GetAxisRaw("Vertical");
-
-        // 移動
-        Vector3 moveDir = new Vector3(moveX, 0f, moveZ).normalized;
-        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
-
-        // 回転（移動方向があるときのみ）
-        if (moveDir.magnitude > 0.01f)
-        {
-            Quaternion toRotation = Quaternion.LookRotation(moveDir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
-        }
+        
 
 
     }
@@ -106,7 +93,7 @@ public class Player : Character
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
 
-        healthText.text = HP.ToString();
+        healthText.text = HP.ToString("f0");
 
         GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
         damageText.GetComponent<Text>().text = _damage.ToString();
@@ -129,20 +116,20 @@ public class Player : Character
         currentLVLGauge += addGauge;
         if (currentLVLGauge >= maxLVLGauge) { LVLUP(); }
         gauge.DOFillAmount(currentLVLGauge / maxLVLGauge,duration);
-
-        Debug.Log(currentLVLGauge);
         
     }
     void LVLUP()
     {       
         LVL++;
-        SkillCardManager.instance.DrawCard();
+        SkillCardManager.instance.StartDraw();
         currentLVLGauge -= maxLVLGauge;
         maxLVLGauge *= 1.5f;
         TailFollowManager.instance.AddTrail(3);
-        MaxHp = MaxHp * LVL;
+        float upStatus =(float) LVL * 0.2f + 1;
+        MaxHp = MaxHp * upStatus;
         HP = MaxHp;
-        damage = damage * LVL;
-        speed = speed + 0.01f * LVL;
+        UpdateFillAmount(healthImage, ref HcurrentRate, HP, duration);
+        damage = damage * upStatus;
+        speed = speed + 0.01f * upStatus;
     }
 }

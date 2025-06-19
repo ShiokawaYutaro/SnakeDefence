@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78745b598f8f48d4488a17c2efac23bb, type: 3}
   m_Name: fire
   m_EditorClassIdentifier: 
-  icon: {fileID: 21300000, guid: 0532f22adfdf7244fb6346cc65d30aea, type: 3}
+  icon: {fileID: 21300000, guid: 72751755edaf9eb4398b863d4fe3d2bf, type: 3}
   cardName: "\u30D5\u30A1\u30A4\u30A2"

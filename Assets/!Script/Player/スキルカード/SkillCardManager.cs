@@ -11,27 +11,42 @@ public class SkillCardManager : MonoBehaviour
     [SerializeField] Transform cardPlace;
     public static List<SkillCard> cardList = null;
 
-    public bool skillSelect;
+    public bool skillSelect = true;
+    public int lvlCount = 1;
 
     private void Start()
     {
         instance = this;
-       // DrawCard();
+        lvlCount = 0;
+        // DrawCard();
     }
-    public void DrawCard()
+
+    public void StartDraw()
     {
-        if (!skillSelect) return;
+        StartCoroutine(DrawCard());
+    }
+    private IEnumerator DrawCard()
+    {
+        if (!skillSelect)
+        {
+            lvlCount++;
+            yield break;
+        }
 
         cardList = new List<SkillCard>(2);
         for (int i = 0; i < 2; i++)
         {
-            cardList.Add (Instantiate(skillCardPrefab, cardPlace));
+            cardList.Add(Instantiate(skillCardPrefab, cardPlace).GetComponent<SkillCard>());
 
             int rand = Random.Range(0, skillCardDataList.Count);
             cardList[i].Initialize(skillCardDataList[rand]);
         }
-        
+
+        skillSelect = false;
     }
+
+
+
     public static void DeleteCard()
     {
         cardList.Clear();

@@ -5,7 +5,7 @@ public class TailFollowManager : MonoBehaviour
 {
     static public TailFollowManager instance = null;
     public GameObject tailFollowPrefab;  // TailFollowプレハブをインスペクターでセット
-    public Transform tailParent;         // TailFollowを置く親（例えば自分の子など）
+    public Transform trailParent;         // TailFollowを置く親（例えば自分の子など）
     private TrailRecorder trailRecorder;
 
     private int followCount = 1; // 最低1つは存在
@@ -30,8 +30,8 @@ public class TailFollowManager : MonoBehaviour
             trailRecorder.AddTrail();
 
             // TailFollowの新しいオブジェクトを生成して親にセット
-            GameObject newTail = Instantiate(tailFollowPrefab, tailParent);
-            newTail.transform.position = Vector3.zero;
+            GameObject newTail = Instantiate(tailFollowPrefab, trailParent);
+            newTail.transform.position = trailParent.Find("body").transform.position;
             TailFollow tailFollowComp = newTail.GetComponent<TailFollow>();
 
             // 新しいTailFollowに追従するトレイル番号をセット

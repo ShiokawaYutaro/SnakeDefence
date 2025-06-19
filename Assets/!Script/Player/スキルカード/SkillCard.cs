@@ -28,5 +28,16 @@ public class SkillCard : MonoBehaviour
         }
         SkillCardManager.instance.skillSelect = true;
         SkillCardManager.DeleteCard();
+        
+        if(SkillCardManager.instance.lvlCount >= 1)
+        {
+            
+        }
+        if (SkillCardManager.instance.lvlCount >= 1)
+        {
+            SkillCardManager.instance.StartDraw();
+            SkillCardManager.instance.lvlCount--;
+
+        }
     }
 }
