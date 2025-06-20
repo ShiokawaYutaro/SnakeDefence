@@ -21,6 +21,7 @@ public class SkillCard : MonoBehaviour
         //この名前のスキルなら
         if(cardName == "ポイズン") { player.poison++; }
         if(cardName == "ファイア") { player.fire++; }
+        if(cardName == "持続回復") { player.regene++; }
 
         for (int i = 0; i < transform.parent.childCount; i++)
         {

@@ -2412,6 +2412,7 @@ MonoBehaviour:
   healthImage: {fileID: 2678253961768489240}
   damageNotation: {fileID: 4592971359189238919, guid: 5bdfcb7d1c7615f4b9cc674d858064cc, type: 3}
   attack: 0
+  isAttacking: 0
   dead: 0
 --- !u!1 &8709724470359224582
 GameObject:

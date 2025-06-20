@@ -19,16 +19,30 @@ public class Player : Character
     float HcurrentRate = 1.0f;
     public int poison;
     public int fire;
+    public int regene;
 
     float maxLVLGauge = 2;
     float currentLVLGauge = 0;
+
+    float healTime;
+
+    [SerializeField] private Image attackArea;
+    protected float attackRadious = 2;
+    bool inArea;
+
+    float attackInterval = 1;
+    float attackTime;
+
+    [SerializeField] protected GameObject bulletPrefab;
+    [SerializeField] private GameObject Gun;
+
     // Start is called before the first frame update
     protected override void Start()
     {
         MaxHp = 100f;
         speed = 10;
         damage = 1;
-
+        attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
         base.Start();
     }
 
@@ -37,14 +51,24 @@ public class Player : Character
     {
         //itemManager = GameObject.Find("ItemManager").GetComponent<ItemManager>();
         //keyManager = GameObject.Find("KeyManager").GetComponent<KeyManager>();
-        
-        TDMove();
+       
 
         healthImage.transform.LookAt(Camera.main.transform.position);
 
         Text text = GameObject.Find("lvlText").GetComponent<Text>();
         text.text = "Lv" + LVL.ToString();
         healthText.text = HP.ToString();
+
+        healTime += Time.deltaTime;
+        if (healTime > 10 && regene >= 1)
+        {
+            healTime = 0;
+            SetHeal(10);
+        }
+
+
+
+
     }
 
 
@@ -52,14 +76,6 @@ public class Player : Character
 
 
     //�֐�===================================================================================
-    public void TDMove()
-    {
-        //rb.AddForce(Vector3.down * 9.8f, ForceMode.Force);
-
-        
-
-
-    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -72,6 +88,21 @@ public class Player : Character
                 enemy.attack = false;
             }
             
+        }
+    }
+
+    public void Attack(GameObject target)
+    {
+        if (rb.velocity.magnitude > 0.01f) return;
+        Vector3 targetDir = target.transform.position - transform.position;
+        targetDir.y = 0f;
+        Quaternion targetRotation = Quaternion.LookRotation(targetDir);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
+        attackTime += Time.deltaTime;
+        if (attackTime > attackInterval)
+        {
+            attackTime = 0;
+            Instantiate(bulletPrefab, Gun.transform.position, Gun.transform.rotation);
         }
     }
 
@@ -96,8 +127,20 @@ public class Player : Character
         healthText.text = HP.ToString("f0");
 
         GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
-        damageText.GetComponent<Text>().text = _damage.ToString();
+        damageText.GetComponent<Text>().text = _damage.ToString("f1");
         Destroy(damageText, 1);
+    }
+
+    public void SetHeal(float _addHeal)
+    {
+        HP += _addHeal;
+        UpdateFillAmount(healthImage, ref HcurrentRate, _addHeal, duration);
+        if(HP > MaxHp)
+        {
+            HcurrentRate = 1;
+            HP = MaxHp;
+        }
+
     }
 
     //ステータス関係------------------------------------------------------------------
@@ -118,18 +161,17 @@ public class Player : Character
         gauge.DOFillAmount(currentLVLGauge / maxLVLGauge,duration);
         
     }
-    void LVLUP()
+    public virtual void LVLUP()
     {       
         LVL++;
         SkillCardManager.instance.StartDraw();
         currentLVLGauge -= maxLVLGauge;
         maxLVLGauge *= 1.5f;
-        TailFollowManager.instance.AddTrail(3);
         float upStatus =(float) LVL * 0.2f + 1;
         MaxHp = MaxHp * upStatus;
-        HP = MaxHp;
-        UpdateFillAmount(healthImage, ref HcurrentRate, HP, duration);
-        damage = damage * upStatus;
+        //HP = MaxHp;
+        //UpdateFillAmount(healthImage, ref HcurrentRate, HP, duration);
+        //damage = damage * upStatus;
         speed = speed + 0.01f * upStatus;
     }
 }

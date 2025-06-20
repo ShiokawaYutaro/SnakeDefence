@@ -1,16 +1,15 @@
 ﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using System.Threading;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Enemy : Character
 {
     private Player player;
-    GameObject target;
     GameObject wayPoint1;
-    GameObject wayPoint2;
     bool onWayPoint1;
-    bool onWayPoint2;
     public Image healthImage;
     float duration = 0.2f;
     float HcurrentRate = 1.0f;
@@ -20,26 +19,34 @@ public class Enemy : Character
 
     float viewAngle = 360;
     int rayCount = 20;
-    float rayDistance = 1.5f;
+    float rayDistance = 4f;
 
 
     public  bool attack;
+    public  bool isAttacking;
     bool playAnim;
     public bool dead;
 
     private Transform lastTarget = null;
     private bool isChasingPlayer = false;
 
+    Vector3 randomTarget;
+    float wanderCooldown = 0f;
+
+    Vector3 lastPosition;
+    float stuckTimer = 0f;
+    float stuckThreshold = 0.1f; // 動いてないとみなす距離
+    float stuckTimeLimit = 2f;   // この秒数動けなかったら「スタック」とみなす
+
+    public EnemySpawn enemySpawn;
     protected override void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-        target = GameObject.Find("家");
-        MaxHp = Random.Range(10,30) * LVL;
+        MaxHp = UnityEngine.Random.Range(10,30) * LVL;
         
         damage = 10;
         base.Start();
         wayPoint1 = GameObject.Find("WayPoint1");
-        wayPoint2 = GameObject.Find("WayPoint2");
     }
 
     protected override void FixedUpdate()
@@ -61,7 +68,24 @@ public class Enemy : Character
             rb.isKinematic = true;
         }
 
+        if (!isChasingPlayer)
+        {
+            wanderCooldown -= Time.deltaTime;
+            if (wanderCooldown <= 0f)
+            {
+                PickRandomDirection();
+                wanderCooldown = UnityEngine.Random.Range(2f, 5f); // 次に動き出すまでの間隔
+            }
+        }
         ViewAction();
+    }
+
+
+    void PickRandomDirection()
+    {
+        float radius = 7f;
+        Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * radius;
+        randomTarget = new Vector3(transform.position.x + randomOffset.x, transform.position.y, transform.position.z + randomOffset.y);
     }
 
     void ViewAction()
@@ -70,7 +94,6 @@ public class Enemy : Character
         float halfAngle = viewAngle / 2f;
 
         bool hitTarget = false; // ← ループ外で初期化！
-
        
         for (int i = 0; i < rayCount; i++)
         {
@@ -81,13 +104,10 @@ public class Enemy : Character
 
             if (Physics.Raycast(viewPos, dir, out RaycastHit hit, rayDistance))
             {
-
+                
                 if (hit.collider.CompareTag("Player") && hit.collider.name == "body")
                 {
-                    rb.velocity = Vector3.zero;
-                    animator.SetBool("run", false);
-                    animator.SetBool("attack", true);
-                    playAnim = true;
+                    
                     hitTarget = true;
 
                     lastTarget = hit.collider.transform;
@@ -101,41 +121,28 @@ public class Enemy : Character
                         Quaternion targetRotation = Quaternion.LookRotation(targetDir);
                         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
                     }
-
-                    break;
-                }
-
-
-                // 家を見つけた
-                else if (hit.collider.transform.parent != null && hit.collider.transform.parent.gameObject == target)
-                {
-                    rb.velocity = Vector3.zero;
-                    animator.SetBool("run", false);
-                    animator.SetBool("attack", true);
-                    playAnim = true;
-                    hitTarget = true;
-
-                    Vector3 targetDir = hit.collider.transform.position - transform.position;
-                    targetDir.y = 0f;
-
-                    if (targetDir != Vector3.zero)
+                    float distance = hit.distance;
+                    if (distance <= 1.5f)
                     {
-                        Quaternion targetRotation = Quaternion.LookRotation(targetDir);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+                        rb.velocity = Vector3.zero;
+                        animator.SetBool("run", false);
+                        animator.SetBool("attack", true);
+                        isAttacking = true;
+                        playAnim = true;
                     }
 
                     break;
                 }
+
             }
 
             Debug.DrawRay(viewPos, dir * rayDistance, Color.red);
         }
-
-        // 攻撃対象が見つからなかった場合、移動
         if (!hitTarget)
         {
             if (isChasingPlayer && lastTarget != null)
             {
+                
                 // プレイヤーを追い続ける
                 Vector3 chaseDir = lastTarget.position - transform.position;
                 chaseDir.y = 0f;
@@ -146,10 +153,16 @@ public class Enemy : Character
                     Time.deltaTime * 5f
                 );
 
+                if (isAttacking)
+                {
+                    rb.velocity = Vector3.zero;
+                    return;
+                }
                 rb.velocity = transform.forward * speed;
 
                 animator.SetBool("run", true);
                 animator.SetBool("attack", false);
+
 
                 // プレイヤーとの距離が一定以上離れたら追跡やめる
                 float dist = Vector3.Distance(transform.position, lastTarget.position);
@@ -164,35 +177,49 @@ public class Enemy : Character
 
             if (rb.velocity != Vector3.zero) { rb.velocity = transform.forward * speed; }
 
-            if (!onWayPoint1)
-            {
-                transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                Quaternion.LookRotation(wayPoint1.transform.position - transform.position),
-                Time.deltaTime * 5f
-                );
-            }
-            if (onWayPoint1)
-            {
-                transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                Quaternion.LookRotation(wayPoint2.transform.position - transform.position),
-                Time.deltaTime * 5f
-                );
-            }
-            if (onWayPoint2)
-            {
-                transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                Quaternion.LookRotation(target.transform.position - transform.position),
-                Time.deltaTime * 5f
-                );
-            }
+            // ===== 新しい徘徊処理 =====
+            Vector3 dir = randomTarget - transform.position;
+            dir.y = 0f;
 
+            if (dir.magnitude > 0.5f)
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+                rb.velocity = transform.forward * speed;
 
-            animator.SetBool("run", true);
-            animator.SetBool("attack", false);
+                animator.SetBool("run", true);
+                animator.SetBool("attack", false);
+            }
+            else
+            {
+                rb.velocity = Vector3.zero;
+                animator.SetBool("run", false);
+                animator.SetBool("Idel", true);
+            }
         }
+
+        float movedDistance = Vector3.Distance(transform.position, lastPosition);
+
+        if (movedDistance < stuckThreshold)
+        {
+            stuckTimer += Time.deltaTime;
+
+            if (stuckTimer >= stuckTimeLimit)
+            {
+                // === スタックした！止めて次の行動へ ===
+                rb.velocity = Vector3.zero;
+                animator.SetBool("run", false);
+
+                stuckTimer = 0f;
+                PickRandomDirection(); // 方向転換またはランダム移動先再設定
+                wanderCooldown = UnityEngine.Random.Range(1f, 3f); // 少し待ってから動く
+            }
+        }
+        else
+        {
+            stuckTimer = 0f; // 動いてたらタイマーリセット
+        }
+
+        lastPosition = transform.position;
 
     }
 
@@ -216,33 +243,47 @@ public class Enemy : Character
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
         GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
         damageText.GetComponent<Text>().color = new Color32(255,255,255,255) ;
-        damageText.GetComponent<Text>().text = _damage.ToString();
+        damageText.GetComponent<Text>().text = _damage.ToString("f1");
         Destroy(damageText, 1);
 
     }
 
-    public async void SetAttributeDamage(float _damage, int attribute , Color32 color)
+    CancellationTokenSource cts = new CancellationTokenSource();
+
+    private void OnDestroy()
+    {
+        cts.Cancel();
+    }
+
+    public async void SetAttributeDamage(float _damage, int attribute, Color32 color)
     {
         if (dead) return;
         for (int i = 0; i < attribute; i++)
         {
+            if (dead) return;
             HP -= _damage;
             float targetRate = HcurrentRate - _damage / MaxHp;
             UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
             GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
             damageText.GetComponent<Text>().color = color;
-            damageText.GetComponent<Text>().text = _damage.ToString();
+            damageText.GetComponent<Text>().text = _damage.ToString("f3");
             Destroy(damageText, 1);
-            await UniTask.Delay(2000);
-        }
 
-        
+            try
+            {
+                await UniTask.Delay(2000, cancellationToken: cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // 破棄時にキャンセルされた場合はループを抜ける
+                return;
+            }
+        }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if(other.gameObject.name == "WayPoint1") { onWayPoint1 = true; }
-        if(other.gameObject.name == "WayPoint2") { onWayPoint2 = true; }
+        
     }
     public void OnAttack()
     {
@@ -250,7 +291,11 @@ public class Enemy : Character
     }
     public void OffAttack()
     {
-        attack = false;
+        attack = false;       
+    }
+    public void OffIsAttacking()
+    {
+        isAttacking = false;
     }
     public void OnAnim()
     {
@@ -264,5 +309,8 @@ public class Enemy : Character
     {
         player.LVLGauge(1);
         Destroy(gameObject, 2);
+        CoinManager.AddCoin(1 + LVL);
+        enemySpawn.RemoveEnemy(this);
+        GetComponent<Collider>().enabled = false;
     }
 }
