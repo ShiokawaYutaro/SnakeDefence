@@ -29,7 +29,7 @@ public class camera : MonoBehaviour
     void LateUpdate()
     {
 
-        transform.position = new Vector3(playerPos.position.x,playerPos.position.y + 14, playerPos.position.z - 10);
+        transform.position = new Vector3(playerPos.position.x,playerPos.position.y + 10, playerPos.position.z - 7);
     }
 
 }

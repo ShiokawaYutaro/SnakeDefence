@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.InputSystem;
 
 public class Player : Character
 {
@@ -27,14 +28,11 @@ public class Player : Character
     float healTime;
 
     [SerializeField] private Image attackArea;
-    protected float attackRadious = 2;
+    protected float attackRadious = 1;
     bool inArea;
 
-    float attackInterval = 1;
-    float attackTime;
-
-    [SerializeField] protected GameObject bulletPrefab;
-    [SerializeField] private GameObject Gun;
+    protected float attackInterval = 1;
+    protected float attackTime;
 
     // Start is called before the first frame update
     protected override void Start()
@@ -68,7 +66,35 @@ public class Player : Character
 
 
 
+        // 現在のゲームパッド情報
+        var current = Gamepad.current;
 
+        // ゲームパッド接続チェック
+        if (current == null)
+            return;
+
+        // 左スティック入力取得
+        var leftStickValue = current.leftStick.ReadValue();
+        float moveX = leftStickValue.x;
+        float moveZ = leftStickValue.y;
+
+        // 移動
+        Vector3 moveDir = new Vector3(moveX, 0f, moveZ).normalized;
+        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
+
+        // 回転（移動方向があるときのみ）
+        if (moveDir.magnitude > 0.01f)
+        {
+            Quaternion toRotation = Quaternion.LookRotation(moveDir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+            animator.SetBool("attack", false);
+            animator.SetBool("run", true);
+        }
+        else
+        {
+            rb.velocity = Vector3.zero;
+            animator.SetBool("run", false);
+        }
     }
 
 
@@ -91,19 +117,13 @@ public class Player : Character
         }
     }
 
-    public void Attack(GameObject target)
+    public virtual void Attack(GameObject target)
     {
-        if (rb.velocity.magnitude > 0.01f) return;
+        if (rb.velocity.magnitude > 0.01f) { return; }
         Vector3 targetDir = target.transform.position - transform.position;
         targetDir.y = 0f;
         Quaternion targetRotation = Quaternion.LookRotation(targetDir);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
-        attackTime += Time.deltaTime;
-        if (attackTime > attackInterval)
-        {
-            attackTime = 0;
-            Instantiate(bulletPrefab, Gun.transform.position, Gun.transform.rotation);
-        }
     }
 
     private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)

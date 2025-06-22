@@ -16,6 +16,10 @@ public abstract class Character : MonoBehaviour
     protected Animator SkillAnim;
     protected Animator ModeAnim;
 
+    public bool attack;
+    public bool isAttacking;
+    protected bool playAnim;
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
@@ -29,4 +33,24 @@ public abstract class Character : MonoBehaviour
     {
     }
 
+    public void OnAttack()
+    {
+        attack = true;
+    }
+    public void OffAttack()
+    {
+        attack = false;
+    }
+    public void OffIsAttacking()
+    {
+        isAttacking = false;
+    }
+    public void OnAnim()
+    {
+        playAnim = true;
+    }
+    public void OffAnim()
+    {
+        playAnim = false;
+    }
 }

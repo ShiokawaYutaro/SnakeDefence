@@ -1,0 +1,11 @@
+Model Information:
+* title:	Baseball Bat
+* source:	https://sketchfab.com/3d-models/baseball-bat-30b41d95e3cc4f53afb4bac3f71fd821
+* author:	CGunwale (https://sketchfab.com/cgunwale)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Baseball Bat" (https://sketchfab.com/3d-models/baseball-bat-30b41d95e3cc4f53afb4bac3f71fd821) by CGunwale (https://sketchfab.com/cgunwale) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

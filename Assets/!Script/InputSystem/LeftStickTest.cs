@@ -5,10 +5,12 @@ public class LeftStickTest : MonoBehaviour
 {
     Rigidbody rb;
     Player player;
+    Animator animator;
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         player = GetComponent<Player>();
+        animator = GetComponent<Animator>();
     }
     private void Update()
     {
@@ -21,7 +23,6 @@ public class LeftStickTest : MonoBehaviour
 
         // 左スティック入力取得
         var leftStickValue = current.leftStick.ReadValue();
-         Debug.Log($"移動量：{leftStickValue}");
         float moveX = leftStickValue.x;
         float moveZ = leftStickValue.y;
 
@@ -34,6 +35,8 @@ public class LeftStickTest : MonoBehaviour
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+            animator.SetBool("attack", false);
+            animator.SetBool("run", true);
         }
     }
 }

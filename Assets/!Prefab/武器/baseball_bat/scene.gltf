@@ -1,0 +1,288 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 418,
+      "max": [
+        0.030700000002980232,
+        0.03060000017285347,
+        0.800000011920929
+      ],
+      "min": [
+        -0.030700000002980232,
+        -0.030799901112914085,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5016,
+      "componentType": 5126,
+      "count": 418,
+      "max": [
+        0.9999025464057922,
+        0.9999116659164429,
+        1.0
+      ],
+      "min": [
+        -0.9999115467071533,
+        -0.9999116659164429,
+        -0.9777988195419312
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 418,
+      "max": [
+        1.0,
+        0.9999977946281433,
+        0.21128343045711517,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -0.2112891674041748,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 418,
+      "max": [
+        0.9373190402984619,
+        0.9834403395652771
+      ],
+      "min": [
+        0.034324176609516144,
+        0.016809308901429176
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 2148,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "CGunwale (https://sketchfab.com/cgunwale)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/baseball-bat-30b41d95e3cc4f53afb4bac3f71fd821",
+      "title": "Baseball Bat"
+    },
+    "generator": "Sketchfab-12.66.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 8592,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3344,
+      "byteOffset": 8592,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 10032,
+      "byteOffset": 11936,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6688,
+      "byteOffset": 21968,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 28656,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Baseball_Bat_baseColor.png"
+    },
+    {
+      "uri": "textures/Baseball_Bat_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Baseball_Bat_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Baseball_Bat",
+      "normalTexture": {
+        "index": 2
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Baseball_Bat_Baseball_Bat_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.016744965687394142,
+        0.49701222777366655,
+        -0.8675819635391234,
+        0.0,
+        -7.771561172376096e-16,
+        -0.86770361661911,
+        -0.497081905603409,
+        0.0,
+        -0.9998598098754883,
+        0.008323619142174724,
+        -0.014529666863381861,
+        0.0,
+        0.39994409680366516,
+        0.39623695611953735,
+        0.0060632727108896655,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "2294a2fcc51a4b949d818df5c55f8416.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.00039999998989515007,
+        1.0
+      ],
+      "name": "Baseball_Bat"
+    },
+    {
+      "mesh": 0,
+      "name": "Baseball_Bat_Baseball_Bat_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

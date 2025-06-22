@@ -21,10 +21,6 @@ public class Enemy : Character
     int rayCount = 20;
     float rayDistance = 4f;
 
-
-    public  bool attack;
-    public  bool isAttacking;
-    bool playAnim;
     public bool dead;
 
     private Transform lastTarget = null;
@@ -285,26 +281,7 @@ public class Enemy : Character
     {
         
     }
-    public void OnAttack()
-    {
-        attack = true;
-    }
-    public void OffAttack()
-    {
-        attack = false;       
-    }
-    public void OffIsAttacking()
-    {
-        isAttacking = false;
-    }
-    public void OnAnim()
-    {
-        playAnim = true;
-    }
-    public void OffAnim()
-    {
-        playAnim = false;
-    }
+   
     public void Dead()
     {
         player.LVLGauge(1);
