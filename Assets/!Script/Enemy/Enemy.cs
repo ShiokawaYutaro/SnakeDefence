@@ -4,6 +4,7 @@ using System.Threading;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public class Enemy : Character
 {
@@ -35,6 +36,8 @@ public class Enemy : Character
     float stuckTimeLimit = 2f;   // この秒数動けなかったら「スタック」とみなす
 
     public EnemySpawn enemySpawn;
+
+    public bool isDamaged = false;
     protected override void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
@@ -62,6 +65,9 @@ public class Enemy : Character
             animator.SetBool("dead", true);
             dead = true;
             rb.isKinematic = true;
+            player.LVLGauge(1);
+            CoinManager.AddCoin(1 + LVL);
+            enemySpawn.RemoveEnemy(this);
         }
 
         if (!isChasingPlayer)
@@ -86,6 +92,7 @@ public class Enemy : Character
 
     void ViewAction()
     {
+        if (dead) return;
         Vector3 viewPos = new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z);
         float halfAngle = viewAngle / 2f;
 
@@ -189,7 +196,6 @@ public class Enemy : Character
             {
                 rb.velocity = Vector3.zero;
                 animator.SetBool("run", false);
-                animator.SetBool("Idel", true);
             }
         }
 
@@ -277,17 +283,10 @@ public class Enemy : Character
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        
-    }
    
     public void Dead()
     {
-        player.LVLGauge(1);
-        Destroy(gameObject, 2);
-        CoinManager.AddCoin(1 + LVL);
-        enemySpawn.RemoveEnemy(this);
+        Destroy(gameObject);
         GetComponent<Collider>().enabled = false;
     }
 }

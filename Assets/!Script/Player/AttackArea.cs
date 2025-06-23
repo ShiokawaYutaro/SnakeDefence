@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,28 +15,44 @@ public class AttackArea : MonoBehaviour
         Enemy enemy = other.GetComponent<Enemy>();
         if (enemy == null || enemy.dead) return;
 
-        // d•¡’Ç‰Á–hŽ~
         if (!targetEnemy.Contains(enemy))
         {
             targetEnemy.Add(enemy);
         }
 
-        // ‚Ü‚¾UŒ‚’†‚Å‚È‚¢A‚©‚Â—LŒø‚È“G‚ª‚¢‚é
-        if (!isAttacking && targetEnemy.Count > 0)
+        // UŒ‚’†‚Å‚È‚¯‚ê‚ÎAUŒ‚ˆ—‚ð”ñ“¯Šú‚ÅŠJŽn
+        if (!isAttacking)
         {
-            // æ“ª‚Ì“G‚ªŽ€‚ñ‚Å‚½‚çíœ
-            while (targetEnemy.Count > 0 && (targetEnemy[0] == null || targetEnemy[0].dead))
-            {
-                targetEnemy.RemoveAt(0);
-            }
-
-            if (targetEnemy.Count > 0)
-            {
-                isAttacking = true;
-                player.Attack(targetEnemy[0].gameObject);
-                isAttacking = false;
-            }
+            StartAttackLoop().Forget();
         }
+
+    }
+
+    private async UniTaskVoid StartAttackLoop()
+    {
+        isAttacking = true;
+
+        while (targetEnemy.Count > 0)
+        {
+            // Ž€‚ñ‚¾“G‚ðœŠO
+            targetEnemy.RemoveAll(e => e == null || e.dead);
+
+            if (targetEnemy.Count == 0) break;
+
+            // æ“ª‚Ì“G‚ðUŒ‚
+            GameObject target = targetEnemy[0].gameObject;
+
+            // ŽÀÛ‚ÌUŒ‚ˆ—iƒAƒjƒ[ƒVƒ‡ƒ““™ŠÜ‚Þj‚ð‘Ò‹@
+            player.Attack(target);
+
+            // ”CˆÓ‚ÌƒN[ƒ‹ƒ^ƒCƒ€
+            await UniTask.Delay(1000); // 1•b‘Ò‚Â‚È‚Ç
+
+            // Ä“xƒŠƒXƒg‚ðƒ`ƒFƒbƒN
+            targetEnemy.RemoveAll(e => e == null || e.dead);
+        }
+
+        isAttacking = false;
     }
 
     private void OnTriggerExit(Collider other)
@@ -45,11 +60,10 @@ public class AttackArea : MonoBehaviour
         if (other.CompareTag("Enemy"))
         {
             Enemy enemy = other.GetComponent<Enemy>();
-            if (enemy != null && targetEnemy.Contains(enemy))
+            if (enemy != null)
             {
                 targetEnemy.Remove(enemy);
             }
         }
     }
-
 }

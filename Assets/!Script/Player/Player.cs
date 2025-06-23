@@ -37,9 +37,6 @@ public class Player : Character
     // Start is called before the first frame update
     protected override void Start()
     {
-        MaxHp = 100f;
-        speed = 10;
-        damage = 1;
         attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
         base.Start();
     }
@@ -64,6 +61,7 @@ public class Player : Character
             SetHeal(10);
         }
 
+        attackTime += Time.deltaTime;
 
 
         // 現在のゲームパッド情報
@@ -120,10 +118,11 @@ public class Player : Character
     public virtual void Attack(GameObject target)
     {
         if (rb.velocity.magnitude > 0.01f) { return; }
-        Vector3 targetDir = target.transform.position - transform.position;
+        Vector3 targetDir = target.transform.position;
         targetDir.y = 0f;
         Quaternion targetRotation = Quaternion.LookRotation(targetDir);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
+        //transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
+        transform.DOLookAt(targetDir,1);
     }
 
     private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)
