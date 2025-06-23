@@ -1,18 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
     [SerializeField] Player player;
+    [SerializeField] GameObject hitEffect;
+    [SerializeField] TrailRenderer trail;
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "Enemy")
+        if (other.gameObject.tag == "Enemy")
         {
             Enemy enemy = other.GetComponent<Enemy>();
             if (!player.attack) return;
-            enemy.SetDamage(player.damage);
+
+            // 自分のColliderを取得（例えばアタック用のコライダー）
+            Collider myCollider = GetComponent<Collider>();
+
+            // 最近接点を計算
+            Vector3 hitPoint = Physics.ClosestPoint(myCollider.bounds.center, other, other.transform.position, other.transform.rotation);
+
+            enemy.SetDamage(1);
+            Instantiate(hitEffect, hitPoint, Quaternion.identity);
+            TriggerShockwave(hitPoint, enemy.gameObject);
         }
+    }
+
+    public void TriggerShockwave(Vector3 hitPos, GameObject hitObj)
+    {
+        Vector3 dir = (hitObj.transform.position - hitPos).normalized;
+        hitObj.GetComponent<Rigidbody>().AddForce(dir * 3000, ForceMode.Impulse);
+    }
+
+    private void Update()
+    {
     }
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Sora : Player
 {
-    [SerializeField] ParticleSystem slashEffect;
     protected override void Start()
     {
         MaxHp = 100f;
@@ -17,22 +16,19 @@ public class Sora : Player
 
     public override void Attack(GameObject target)
     {
-        if (isAttacking) return;
+        if (rb.velocity.magnitude > 0.01f) { return; }
+        // if (isAttacking) return;
         base.Attack(target);
         if (attackTime > attackInterval)
         {
             attackTime = 0;
-            animator.SetBool("attack", true);
-        }
-        else
-        {
-            animator.SetBool("attack", false);
+            animator.SetTrigger("attack 0");
         }
 
     }
 
-    public void SlashEffect()
+    public void HitEffect()
     {
-        Instantiate(slashEffect,transform.position,Quaternion.Euler(15,50,180));
+        
     }
 }

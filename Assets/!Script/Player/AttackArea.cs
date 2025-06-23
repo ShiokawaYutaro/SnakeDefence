@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +20,7 @@ public class AttackArea : MonoBehaviour
             targetEnemy.Add(enemy);
         }
 
-        // UŒ‚’†‚Å‚È‚¯‚ê‚ÎAUŒ‚ˆ—‚ð”ñ“¯Šú‚ÅŠJŽn
+        // æ”»æ’ƒä¸­ã§ãªã‘ã‚Œã°ã€æ”»æ’ƒå‡¦ç†ã‚’éžåŒæœŸã§é–‹å§‹
         if (!isAttacking)
         {
             StartAttackLoop().Forget();
@@ -34,21 +34,21 @@ public class AttackArea : MonoBehaviour
 
         while (targetEnemy.Count > 0)
         {
-            // Ž€‚ñ‚¾“G‚ðœŠO
+            // æ­»ã‚“ã æ•µã‚’é™¤å¤–
             targetEnemy.RemoveAll(e => e == null || e.dead);
 
             if (targetEnemy.Count == 0) break;
 
-            // æ“ª‚Ì“G‚ðUŒ‚
+            // å…ˆé ­ã®æ•µã‚’æ”»æ’ƒ
             GameObject target = targetEnemy[0].gameObject;
 
-            // ŽÀÛ‚ÌUŒ‚ˆ—iƒAƒjƒ[ƒVƒ‡ƒ““™ŠÜ‚Þj‚ð‘Ò‹@
+            // å®Ÿéš›ã®æ”»æ’ƒå‡¦ç†ï¼ˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç­‰å«ã‚€ï¼‰ã‚’å¾…æ©Ÿ
             player.Attack(target);
 
-            // ”CˆÓ‚ÌƒN[ƒ‹ƒ^ƒCƒ€
-            await UniTask.Delay(1000); // 1•b‘Ò‚Â‚È‚Ç
+            // ä»»æ„ã®ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ 
+            await UniTask.Delay(1000); // 1ç§’å¾…ã¤ãªã©
 
-            // Ä“xƒŠƒXƒg‚ðƒ`ƒFƒbƒN
+            // å†åº¦ãƒªã‚¹ãƒˆã‚’ãƒã‚§ãƒƒã‚¯
             targetEnemy.RemoveAll(e => e == null || e.dead);
         }
 

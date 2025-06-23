@@ -44,7 +44,6 @@ public abstract class Character : MonoBehaviour
     public void OffIsAttacking()
     {
         isAttacking = false;
-        animator.SetBool("attack", false);
     }
     public void OnAnim()
     {

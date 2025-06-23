@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.InputSystem;
+using Cysharp.Threading.Tasks;
 
 public class Player : Character
 {
@@ -117,7 +118,6 @@ public class Player : Character
 
     public virtual void Attack(GameObject target)
     {
-        if (rb.velocity.magnitude > 0.01f) { return; }
         Vector3 targetDir = target.transform.position;
         targetDir.y = 0f;
         Quaternion targetRotation = Quaternion.LookRotation(targetDir);
