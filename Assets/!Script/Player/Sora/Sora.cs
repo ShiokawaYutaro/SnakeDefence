@@ -8,9 +8,10 @@ public class Sora : Player
     {
         MaxHp = 100f;
         speed = 10;
-        damage = 30;
+        damage = 10;
         attackRadious = 1;
         attackInterval = 1;
+        chargePower = 1;
         base.Start();
     }
 
@@ -22,13 +23,11 @@ public class Sora : Player
         if (attackTime > attackInterval)
         {
             attackTime = 0;
+            
             animator.SetTrigger("attack 0");
         }
 
     }
 
-    public void HitEffect()
-    {
-        
-    }
+    
 }

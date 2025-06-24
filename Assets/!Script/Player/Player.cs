@@ -15,8 +15,14 @@ public class Player : Character
     
 
     //public GameObject HPbar;
-    public Image healthImage;
+    public GameObject healthBar;
+    public GameObject chargeBar;
+    Image healthImage;
+    protected Image chargeImage;
     [SerializeField]Text healthText;
+    protected float chargePower;
+    public float damageBonus;
+
     float duration = 0.2f;
     float HcurrentRate = 1.0f;
     public int poison;
@@ -40,6 +46,11 @@ public class Player : Character
     {
         attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
         base.Start();
+
+        healthImage = healthBar.transform.Find("front").GetComponent<Image>();
+        chargeImage = chargeBar.transform.Find("front").GetComponent<Image>();
+
+        chargeImage.fillAmount = 0;
     }
 
     // Update is called once per frame
@@ -49,7 +60,15 @@ public class Player : Character
         //keyManager = GameObject.Find("KeyManager").GetComponent<KeyManager>();
        
 
-        healthImage.transform.LookAt(Camera.main.transform.position);
+        healthBar.transform.LookAt(Camera.main.transform.position);
+
+        if (!isAttacking)
+        {
+            chargeImage.fillAmount += chargePower * 0.001f;
+            damageBonus = chargeImage.fillAmount * damage;
+            Debug.Log(damageBonus);
+        }
+
 
         Text text = GameObject.Find("lvlText").GetComponent<Text>();
         text.text = "Lv" + LVL.ToString();
@@ -192,5 +211,11 @@ public class Player : Character
         //UpdateFillAmount(healthImage, ref HcurrentRate, HP, duration);
         //damage = damage * upStatus;
         speed = speed + 0.01f * upStatus;
+    }
+
+    public void ChargeReset()
+    {
+        chargeImage.fillAmount = 0;
+        damageBonus = 0;
     }
 }

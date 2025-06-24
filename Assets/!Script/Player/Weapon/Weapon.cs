@@ -22,9 +22,10 @@ public class Weapon : MonoBehaviour
             // Å‹ßÚ“_‚ğŒvZ
             Vector3 hitPoint = Physics.ClosestPoint(myCollider.bounds.center, other, other.transform.position, other.transform.rotation);
 
-            enemy.SetDamage(1);
+            enemy.SetDamage(player.damage + player.damageBonus);
             Instantiate(hitEffect, hitPoint, Quaternion.identity);
             TriggerShockwave(hitPoint, enemy.gameObject);
+            player.ChargeReset();
         }
     }
 
