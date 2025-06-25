@@ -16,7 +16,6 @@ public class Enemy : Character
     float HcurrentRate = 1.0f;
 
     [SerializeField] private GameObject damageNotation;
-    bool atkDelay;
 
     float viewAngle = 360;
     int rayCount = 20;

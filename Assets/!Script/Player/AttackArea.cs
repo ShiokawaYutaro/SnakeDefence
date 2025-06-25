@@ -1,15 +1,34 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AttackArea : MonoBehaviour
 {
     [SerializeField] private Player player;
     private List<Enemy> targetEnemy = new List<Enemy>();
+    private List<EnemySpawn> targetEnemySpawn = new List<EnemySpawn>();
     private bool isAttacking = false;
 
     private void OnTriggerStay(Collider other)
     {
+        if (other.CompareTag("EnemySpawn"))
+        {
+            EnemySpawn enemySpawn = other.GetComponent<EnemySpawn>();
+            if (enemySpawn == null || enemySpawn.dead) return;
+
+            if (!targetEnemySpawn.Contains(enemySpawn))
+            {
+                targetEnemySpawn.Add(enemySpawn);
+            }
+
+            // 攻撃中でなければ、攻撃処理を非同期で開始
+            if (!isAttacking)
+            {
+                StartAttackLoop().Forget();
+            }
+        }
+
         if (!other.CompareTag("Enemy")) return;
 
         Enemy enemy = other.GetComponent<Enemy>();
@@ -31,6 +50,26 @@ public class AttackArea : MonoBehaviour
     private async UniTaskVoid StartAttackLoop()
     {
         isAttacking = true;
+
+        while (targetEnemySpawn.Count > 0)
+        {
+            // 死んだ敵を除外
+            targetEnemySpawn.RemoveAll(e => e == null || e.dead);
+
+            if (targetEnemySpawn.Count == 0) break;
+
+            // 先頭の敵を攻撃
+            GameObject target = targetEnemySpawn[0].gameObject;
+
+            // 実際の攻撃処理（アニメーション等含む）を待機
+            player.Attack(target);
+
+            // 任意のクールタイム
+            await UniTask.Delay(1000); // 1秒待つなど
+
+            // 再度リストをチェック
+            targetEnemySpawn.RemoveAll(e => e == null || e.dead);
+        }
 
         while (targetEnemy.Count > 0)
         {
@@ -63,6 +102,15 @@ public class AttackArea : MonoBehaviour
             if (enemy != null)
             {
                 targetEnemy.Remove(enemy);
+            }
+        }
+
+        if (other.CompareTag("EnemySpawn"))
+        {
+            EnemySpawn enemySpawn = other.GetComponent<EnemySpawn>();
+            if (enemySpawn != null)
+            {
+                targetEnemySpawn.Remove(enemySpawn);
             }
         }
     }

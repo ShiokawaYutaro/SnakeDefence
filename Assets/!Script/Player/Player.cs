@@ -164,9 +164,9 @@ public class Player : Character
 
         healthText.text = HP.ToString("f0");
 
-        GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
-        damageText.GetComponent<Text>().text = _damage.ToString("f1");
-        Destroy(damageText, 1);
+        //GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
+        //damageText.GetComponent<Text>().text = _damage.ToString("f1");
+        //Destroy(damageText, 1);
     }
 
     public void SetHeal(float _addHeal)
