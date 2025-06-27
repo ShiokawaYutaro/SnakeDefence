@@ -41,6 +41,8 @@ public class Player : Character
     protected float attackInterval = 1;
     protected float attackTime;
 
+    public bool ult;
+
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -66,7 +68,7 @@ public class Player : Character
         {
             chargeImage.fillAmount += chargePower * 0.001f;
             damageBonus = chargeImage.fillAmount * damage;
-            Debug.Log(damageBonus);
+           // Debug.Log(damageBonus);
         }
 
 
@@ -105,7 +107,6 @@ public class Player : Character
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
-            animator.SetBool("attack", false);
             animator.SetBool("run", true);
         }
         else
@@ -217,5 +218,11 @@ public class Player : Character
     {
         chargeImage.fillAmount = 0;
         damageBonus = 0;
+    }
+
+    public void UseUlt()
+    {
+        ult = true;
+        animator.SetTrigger("ult");
     }
 }
