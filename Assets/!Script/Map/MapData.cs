@@ -4,6 +4,5 @@ using UnityEngine;
 
 public class MapData
 {
-    public int ID;
-    public bool spawnEnemy;
+    public int StageLVL;
 }

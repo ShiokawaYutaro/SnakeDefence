@@ -43,7 +43,7 @@ public class EnemySpawn : Character
             spawnTime = 0;
             Enemy enemy = Instantiate(prefab,transform.position,Quaternion.identity);
             enemyList.Add(enemy);
-            enemy.enemySpawn = this;
+            //enemy.enemySpawn = this;
         }
 
         if (HP <= 0)

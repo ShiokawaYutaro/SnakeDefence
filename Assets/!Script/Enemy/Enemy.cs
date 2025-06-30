@@ -9,8 +9,7 @@ using Unity.VisualScripting;
 public class Enemy : Character
 {
     private Player player;
-    GameObject wayPoint1;
-    bool onWayPoint1;
+
     public Image healthImage;
     float duration = 0.2f;
     float HcurrentRate = 1.0f;
@@ -34,7 +33,7 @@ public class Enemy : Character
     float stuckThreshold = 0.1f; // 動いてないとみなす距離
     float stuckTimeLimit = 2f;   // この秒数動けなかったら「スタック」とみなす
 
-    public EnemySpawn enemySpawn;
+    //public EnemySpawn enemySpawn;
 
     public bool isDamaged = false;
     protected override void Start()
@@ -44,7 +43,6 @@ public class Enemy : Character
         
         damage = 10;
         base.Start();
-        wayPoint1 = GameObject.Find("WayPoint1");
     }
 
     protected override void FixedUpdate()
@@ -66,7 +64,6 @@ public class Enemy : Character
             rb.isKinematic = true;
             player.LVLGauge(1);
             CoinManager.AddCoin(1 + LVL);
-            enemySpawn.RemoveEnemy(this);
         }
 
         if (!isChasingPlayer)

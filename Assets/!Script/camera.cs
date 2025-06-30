@@ -4,8 +4,6 @@ using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
-using static UnityEngine.GraphicsBuffer;
 
 public class camera : MonoBehaviour
 {
@@ -25,7 +23,8 @@ public class camera : MonoBehaviour
     {
         if (!player.ult)
         {
-            transform.position = new Vector3(playerPos.position.x, playerPos.position.y + 10, playerPos.position.z - 6);
+            transform.DOMove(new Vector3(playerPos.position.x, playerPos.position.y + 10, playerPos.position.z - 6) , 0.5f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(50,0,0), 0.3f);
         }
 
         else

@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.InputSystem;
-using Cysharp.Threading.Tasks;
 
 public class Player : Character
 {
@@ -42,6 +41,17 @@ public class Player : Character
     protected float attackTime;
 
     public bool ult;
+    int _fingerId = -1;
+    [SerializeField] Transform ultCamera;
+
+
+    public RectTransform joystickBG;
+    public RectTransform joystickKnob;
+    private float joystickRange = 100f;
+
+    private int touchId = -1;
+    private Vector2 startTouchPos;
+    private bool isMoving = false;
 
     // Start is called before the first frame update
     protected override void Start()
@@ -86,6 +96,30 @@ public class Player : Character
         attackTime += Time.deltaTime;
 
 
+        if (ult)
+        {
+            Camera.main.transform.position = new Vector3(ultCamera.position.x, ultCamera.position.y, ultCamera.position.z);
+            Camera.main.transform.rotation = Quaternion.Euler(ultCamera.eulerAngles);
+            Camera.main.cullingMask &= ~(1 << LayerMask.NameToLayer("UI"));
+        }
+        else
+        {
+            
+            Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z - 6);
+           // Camera.main.transform.rotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(50, 0, 0));
+           Camera.main.transform.rotation = Quaternion.Euler(50, 0, 0);
+            StickMove();
+        }
+
+       
+
+
+    }
+
+
+
+    private void StickMove()
+    {
         // 現在のゲームパッド情報
         var current = Gamepad.current;
 
@@ -99,13 +133,13 @@ public class Player : Character
         float moveZ = leftStickValue.y;
 
         // 移動
-        Vector3 moveDir = new Vector3(moveX, 0f, moveZ).normalized;
-        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
+        Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
+        rb.velocity = new Vector3(PCmoveDir.x, rb.velocity.y, PCmoveDir.z) * speed;
 
         // 回転（移動方向があるときのみ）
-        if (moveDir.magnitude > 0.01f)
+        if (PCmoveDir.magnitude > 0.01f)
         {
-            Quaternion toRotation = Quaternion.LookRotation(moveDir);
+            Quaternion toRotation = Quaternion.LookRotation(PCmoveDir);
             transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
             animator.SetBool("run", true);
         }
@@ -114,11 +148,67 @@ public class Player : Character
             rb.velocity = Vector3.zero;
             animator.SetBool("run", false);
         }
+        if (Input.touchCount > 0)
+        {
+            foreach (Touch touch in Input.touches)
+            {
+                // タッチ開始
+                if (touch.phase == UnityEngine.TouchPhase.Began && touchId == -1)
+                {
+                    touchId = touch.fingerId;
+                    startTouchPos = touch.position;
+
+                    joystickBG.gameObject.SetActive(true);
+                    joystickKnob.gameObject.SetActive(true);
+                    joystickBG.position = startTouchPos;
+                    joystickKnob.position = startTouchPos;
+                }
+
+                // 該当指の移動
+                if (touch.fingerId == touchId)
+                {
+                    if (touch.phase == UnityEngine.TouchPhase.Moved || touch.phase == UnityEngine.TouchPhase.Stationary)
+                    {
+                        Vector2 offset = touch.position - startTouchPos;
+                        Vector2 clampedOffset = Vector2.ClampMagnitude(offset, joystickRange);
+                        joystickKnob.position = startTouchPos + clampedOffset;
+
+                        Vector3 moveDir = new Vector3(clampedOffset.x, 0, clampedOffset.y).normalized;
+                        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
+
+                        if (moveDir.magnitude > 0.01f)
+                        {
+                            Quaternion toRotation = Quaternion.LookRotation(moveDir);
+                            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+                            animator.SetBool("run", true);
+                        }
+
+                        isMoving = true;
+                    }
+
+                    if (touch.phase == UnityEngine.TouchPhase.Ended || touch.phase == UnityEngine.TouchPhase.Canceled)
+                    {
+                        touchId = -1;
+                        rb.velocity = Vector3.zero;
+                        animator.SetBool("run", false);
+                        joystickBG.gameObject.SetActive(false);
+                        joystickKnob.gameObject.SetActive(false);
+                        isMoving = false;
+                    }
+                }
+            }
+        }
+        else if (isMoving)
+        {
+            // 指が離された場合に停止（保険）
+            rb.velocity = Vector3.zero;
+            animator.SetBool("run", false);
+            joystickBG.gameObject.SetActive(false);
+            joystickKnob.gameObject.SetActive(false);
+            touchId = -1;
+            isMoving = false;
+        }
     }
-
-
-
-
 
     //�֐�===================================================================================
 
@@ -159,6 +249,7 @@ public class Player : Character
 
     public void SetDamage(float _damage)
     {
+        _damage -= defence;
         HP -= _damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
@@ -225,4 +316,10 @@ public class Player : Character
         ult = true;
         animator.SetTrigger("ult");
     }
+    public void UnUseUlt()
+    {
+        ult = false;
+       
+    }
+
 }

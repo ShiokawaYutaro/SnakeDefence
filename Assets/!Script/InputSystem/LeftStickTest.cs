@@ -1,42 +1,43 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using Unity.Mathematics;
 
 public class LeftStickTest : MonoBehaviour
 {
-    Rigidbody rb;
-    Player player;
-    Animator animator;
-    private void Start()
+    public Camera cam;
+    private float zoomSpeed = 0.1f;
+    private float minZoom = 60;
+    private float maxZoom = 100;
+
+    void Update()
     {
-        rb = GetComponent<Rigidbody>();
-        player = GetComponent<Player>();
-        animator = GetComponent<Animator>();
-    }
-    private void Update()
-    {
-        // 現在のゲームパッド情報
-        var current = Gamepad.current;
-
-        // ゲームパッド接続チェック
-        if (current == null)
-            return;
-
-        // 左スティック入力取得
-        var leftStickValue = current.leftStick.ReadValue();
-        float moveX = leftStickValue.x;
-        float moveZ = leftStickValue.y;
-
-        // 移動
-        Vector3 moveDir = new Vector3(moveX, 0f, moveZ).normalized;
-        rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * player.speed;
-
-        // 回転（移動方向があるときのみ）
-        if (moveDir.magnitude > 0.01f)
+        if (Input.touchCount == 2)
         {
-            Quaternion toRotation = Quaternion.LookRotation(moveDir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
-            animator.SetBool("attack", false);
-            animator.SetBool("run", true);
+            Touch touch0 = Input.GetTouch(0);
+            Touch touch1 = Input.GetTouch(1);
+
+            // 直前のタッチ位置
+            Vector2 prevTouch0 = touch0.position - touch0.deltaPosition;
+            Vector2 prevTouch1 = touch1.position - touch1.deltaPosition;
+
+            // 前と現在の2本指の距離
+            float prevDistance = Vector2.Distance(prevTouch0, prevTouch1);
+            float currentDistance = Vector2.Distance(touch0.position, touch1.position);
+
+            float delta = prevDistance - currentDistance;
+
+            cam.fieldOfView += delta * zoomSpeed;
+            cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minZoom, maxZoom);
         }
+
+        //if (Input.touchCount == 1)
+        //{
+        //    Touch touch0 = Input.GetTouch(0);
+
+        //    // 直前のタッチ位置
+        //    Stick.rectTransform.position = touch0.position;
+        //}
     }
 }

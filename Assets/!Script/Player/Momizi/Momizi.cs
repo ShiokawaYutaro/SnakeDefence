@@ -9,6 +9,7 @@ public class Momizi : Player
         MaxHp = 100f;
         speed = 10;
         damage = 10;
+        defence = 1;
         attackRadious = 1;
         attackInterval = 1;
         chargePower = 1;
