@@ -1247,7 +1247,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dd4b84f9223b9be4687b1ee78d87ba63, type: 2}
+  - {fileID: 2100000, guid: e2b9b08dd1edc4c4580931a06a4ee346, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4110,7 +4110,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8698357450712438844}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4185,7 +4185,6 @@ MonoBehaviour:
   healthImage: {fileID: 2678253961768489240}
   damageNotation: {fileID: 4592971359189238919, guid: 5bdfcb7d1c7615f4b9cc674d858064cc, type: 3}
   dead: 0
-  enemySpawn: {fileID: 0}
   isDamaged: 0
 --- !u!95 &2145118682746744022
 Animator:

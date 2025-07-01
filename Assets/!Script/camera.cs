@@ -21,18 +21,18 @@ public class camera : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        if (!player.ult)
-        {
-            transform.DOMove(new Vector3(playerPos.position.x, playerPos.position.y + 10, playerPos.position.z - 6) , 0.5f);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(50,0,0), 0.3f);
-        }
+        //if (!player.ult)
+        //{
+        //    transform.DOMove(new Vector3(playerPos.position.x, playerPos.position.y + 10, playerPos.position.z - 6) , 0.5f);
+        //    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(50,0,0), 0.3f);
+        //}
 
-        else
-        {
-            transform.position = new Vector3(ultCameraPos.position.x, ultCameraPos.position.y, ultCameraPos.position.z);
-            transform.rotation = Quaternion.Euler(ultCameraPos.eulerAngles);
-            cameraCompo.cullingMask &= ~(1 << LayerMask.NameToLayer("UI")); ;
-        }
+        //else
+        //{
+        //    transform.position = new Vector3(ultCameraPos.position.x, ultCameraPos.position.y, ultCameraPos.position.z);
+        //    transform.rotation = Quaternion.Euler(ultCameraPos.eulerAngles);
+        //    cameraCompo.cullingMask &= ~(1 << LayerMask.NameToLayer("UI")); ;
+        //}
         //if (Input.GetKeyDown(KeyCode.Space))
         //{
         //    isAnimating = true;
