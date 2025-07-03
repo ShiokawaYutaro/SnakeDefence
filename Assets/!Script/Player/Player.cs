@@ -53,6 +53,8 @@ public class Player : Character
     private Vector2 startTouchPos;
     private bool isMoving = false;
 
+    private bool isGrounded;
+
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -120,6 +122,8 @@ public class Player : Character
 
     private void StickMove()
     {
+        float posY = rb.velocity.y;
+        posY -= 0.1f;
         // 現在のゲームパッド情報
         var current = Gamepad.current;
 
@@ -134,7 +138,8 @@ public class Player : Character
 
         // 移動
         Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
-        rb.velocity = new Vector3(PCmoveDir.x, rb.velocity.y, PCmoveDir.z) * speed;
+       
+        rb.velocity = new Vector3(PCmoveDir.x, posY, PCmoveDir.z) * speed;
 
         // 回転（移動方向があるときのみ）
         if (PCmoveDir.magnitude > 0.01f)
@@ -207,6 +212,21 @@ public class Player : Character
             joystickKnob.gameObject.SetActive(false);
             touchId = -1;
             isMoving = false;
+        }
+
+        Vector3 origin = transform.position + PCmoveDir / 3;
+        Vector3 direction = Vector3.down;
+
+        // デバッグ用にレイを可視化（Sceneビューで確認可能）
+        Debug.DrawRay(origin, direction * 2, Color.red);
+        // 真下にレイを飛ばす
+        isGrounded = Physics.Raycast(transform.position + PCmoveDir / 3, Vector3.down, 2);
+
+        if (!isGrounded)
+        {
+            // 地面がない → 移動禁止
+            rb.velocity = Vector3.zero;
+            return;
         }
     }
 
