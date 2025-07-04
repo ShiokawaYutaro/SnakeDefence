@@ -6,9 +6,8 @@ public class Weapon : MonoBehaviour
 {
     [SerializeField] Player player;
     [SerializeField] GameObject hitEffect;
-    [SerializeField] TrailRenderer trail;
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.tag == "Enemy")
         {
@@ -23,23 +22,7 @@ public class Weapon : MonoBehaviour
 
             enemy.SetDamage(player.damage + player.damageBonus);
             Instantiate(hitEffect, hitPoint, Quaternion.identity);
-            TriggerShockwave(hitPoint, enemy.gameObject);
-            player.ChargeReset();
-        }
-
-        if (other.gameObject.tag == "EnemySpawn")
-        {
-            EnemySpawn enemy = other.GetComponent<EnemySpawn>();
-            if (!player.attack) return;
-
-            // 自分のColliderを取得（例えばアタック用のコライダー）
-            Collider myCollider = GetComponent<Collider>();
-
-            // 最近接点を計算
-            Vector3 hitPoint = Physics.ClosestPoint(myCollider.bounds.center, other, other.transform.position, other.transform.rotation);
-
-            enemy.SetDamage(player.damage + player.damageBonus);
-            Instantiate(hitEffect, hitPoint, Quaternion.identity);
+           // TriggerShockwave(hitPoint, enemy.gameObject);
             player.ChargeReset();
         }
     }

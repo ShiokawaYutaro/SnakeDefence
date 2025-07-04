@@ -73,9 +73,12 @@ public class Player : Character
         //itemManager = GameObject.Find("ItemManager").GetComponent<ItemManager>();
         //keyManager = GameObject.Find("KeyManager").GetComponent<KeyManager>();
        
-
+        if(HP <= 0)
+        {
+            HP = 0;
+        }
         healthBar.transform.LookAt(Camera.main.transform.position);
-
+        healthText.text = HP.ToString("f0") + "/" + MaxHp.ToString("f0");
         if (!isAttacking)
         {
             chargeImage.fillAmount += chargePower * 0.001f;
@@ -86,14 +89,17 @@ public class Player : Character
 
         Text text = GameObject.Find("lvlText").GetComponent<Text>();
         text.text = "Lv" + LVL.ToString();
-        healthText.text = HP.ToString();
 
-        healTime += Time.deltaTime;
-        if (healTime > 10 && regene >= 1)
+        if(HP < MaxHp && regene >= 1)
         {
-            healTime = 0;
-            SetHeal(10);
+            healTime += Time.deltaTime;
+            if (healTime > 10)
+            {
+                healTime = 0;
+                SetHeal(_HEAL_AMOUNT * regene);
+            }
         }
+        
 
         attackTime += Time.deltaTime;
 
@@ -124,35 +130,35 @@ public class Player : Character
     {
         float posY = rb.velocity.y;
         posY -= 0.1f;
-        // 現在のゲームパッド情報
-        var current = Gamepad.current;
+        //// 現在のゲームパッド情報
+        //var current = Gamepad.current;
 
-        // ゲームパッド接続チェック
-        if (current == null)
-            return;
+        //// ゲームパッド接続チェック
+        //if (current == null)
+        //    return;
 
-        // 左スティック入力取得
-        var leftStickValue = current.leftStick.ReadValue();
-        float moveX = leftStickValue.x;
-        float moveZ = leftStickValue.y;
+        //// 左スティック入力取得
+        //var leftStickValue = current.leftStick.ReadValue();
+        //float moveX = leftStickValue.x;
+        //float moveZ = leftStickValue.y;
 
-        // 移動
-        Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
+        //// 移動
+        //Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
        
-        rb.velocity = new Vector3(PCmoveDir.x, posY, PCmoveDir.z) * speed;
+        //rb.velocity = new Vector3(PCmoveDir.x, posY, PCmoveDir.z) * speed;
 
-        // 回転（移動方向があるときのみ）
-        if (PCmoveDir.magnitude > 0.01f)
-        {
-            Quaternion toRotation = Quaternion.LookRotation(PCmoveDir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
-            animator.SetBool("run", true);
-        }
-        else
-        {
-            rb.velocity = Vector3.zero;
-            animator.SetBool("run", false);
-        }
+        //// 回転（移動方向があるときのみ）
+        //if (PCmoveDir.magnitude > 0.01f)
+        //{
+        //    Quaternion toRotation = Quaternion.LookRotation(PCmoveDir);
+        //    transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+        //    animator.SetBool("run", true);
+        //}
+        //else
+        //{
+        //    rb.velocity = Vector3.zero;
+        //    animator.SetBool("run", false);
+        //}
         if (Input.touchCount > 0)
         {
             foreach (Touch touch in Input.touches)
@@ -188,6 +194,22 @@ public class Player : Character
                             animator.SetBool("run", true);
                         }
 
+                        Vector3 origin = transform.position + moveDir / 3;
+                        Vector3 direction = Vector3.down;
+
+                        // デバッグ用にレイを可視化（Sceneビューで確認可能）
+                        Debug.DrawRay(origin, direction * 2, Color.red);
+                        int groundLayer = LayerMask.GetMask("Ground");
+                        // 真下にレイを飛ばす
+                        isGrounded = Physics.Raycast(transform.position + moveDir / 3, Vector3.down, 2, groundLayer);
+
+                        if (!isGrounded)
+                        {
+                            // 地面がない → 移動禁止
+                            rb.velocity = Vector3.zero;
+                            continue;
+                        }
+
                         isMoving = true;
                     }
 
@@ -214,27 +236,14 @@ public class Player : Character
             isMoving = false;
         }
 
-        Vector3 origin = transform.position + PCmoveDir / 3;
-        Vector3 direction = Vector3.down;
-
-        // デバッグ用にレイを可視化（Sceneビューで確認可能）
-        Debug.DrawRay(origin, direction * 2, Color.red);
-        // 真下にレイを飛ばす
-        isGrounded = Physics.Raycast(transform.position + PCmoveDir / 3, Vector3.down, 2);
-
-        if (!isGrounded)
-        {
-            // 地面がない → 移動禁止
-            rb.velocity = Vector3.zero;
-            return;
-        }
+       
     }
 
     //�֐�===================================================================================
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.name == "ピッケル")
+        if(other.gameObject.name == "武器")
         {
             Enemy enemy = other.transform.root.GetComponent<Enemy>();
             if (enemy.attack)
@@ -274,7 +283,7 @@ public class Player : Character
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
 
-        healthText.text = HP.ToString("f0");
+       
 
         //GameObject damageText = Instantiate(damageNotation, transform.Find("ゲーム内/healthImage"));
         //damageText.GetComponent<Text>().text = _damage.ToString("f1");
@@ -283,15 +292,12 @@ public class Player : Character
 
     public void SetHeal(float _addHeal)
     {
-        HP += _addHeal;
-        UpdateFillAmount(healthImage, ref HcurrentRate, _addHeal, duration);
-        if(HP > MaxHp)
-        {
-            HcurrentRate = 1;
-            HP = MaxHp;
-        }
-
+        float actualHeal = Mathf.Min(_addHeal, MaxHp - HP); // 超えない分だけヒール
+        HP += actualHeal;
+        float targetRate = HcurrentRate + actualHeal / MaxHp;
+        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
     }
+
 
     //ステータス関係------------------------------------------------------------------
     void Dead()
@@ -307,10 +313,17 @@ public class Player : Character
         Image gauge = GameObject.Find("lvlGauge").GetComponent<Image>();
 
         currentLVLGauge += addGauge;
-        if (currentLVLGauge >= maxLVLGauge) { LVLUP(); }
-        gauge.DOFillAmount(currentLVLGauge / maxLVLGauge,duration);
-        
+        if (currentLVLGauge >= maxLVLGauge)
+        {
+            LVLUP(); // MaxHp が増える処理
+                     // 回復はしないけど、FillAmount を現在HPに合わせて更新する
+            float targetRate = HP / MaxHp;
+            UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+        }
+
+        gauge.DOFillAmount(currentLVLGauge / maxLVLGauge, duration);
     }
+
     public virtual void LVLUP()
     {       
         LVL++;

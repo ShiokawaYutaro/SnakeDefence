@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public class Momizi : Player
 {
+    [SerializeField] GameObject[] effects;
+    [SerializeField] ParticleSystem ultEffect;
+
     protected override void Start()
     {
         MaxHp = 100f;
@@ -14,6 +18,16 @@ public class Momizi : Player
         attackInterval = 1;
         chargePower = 1;
         base.Start();
+    }
+
+    protected override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        for (int i = 0; i < effects.Length; i++)
+        {
+            effects[i].transform.localScale = new Vector3(chargeImage.fillAmount, chargeImage.fillAmount, chargeImage.fillAmount);
+        }
+        
     }
 
     public override void Attack(GameObject target)
@@ -28,6 +42,11 @@ public class Momizi : Player
             animator.SetTrigger("attack");
         }
 
+    }
+
+    public void ULTEffect()
+    {
+        Instantiate(ultEffect,transform);
     }
 
     

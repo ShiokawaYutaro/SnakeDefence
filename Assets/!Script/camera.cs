@@ -7,73 +7,41 @@ using UnityEngine.UIElements;
 
 public class camera : MonoBehaviour
 {
-    [SerializeField] Player player;
-    Transform playerPos;
+    public Transform player;
+    public LayerMask obstacleMask;
+    public Material transparentMat;
+    public Material defaultMat;
 
-    [SerializeField] Transform ultCameraPos;
-    Camera cameraCompo;
+    private Renderer lastRenderer;
 
-    private void Start()
+    void Update()
     {
-        playerPos = player.transform;
-        cameraCompo = GetComponent<Camera>();
+        Vector3 dir = player.position - transform.position;
+        float distance = Vector3.Distance(transform.position, player.position);
+
+        if (Physics.Raycast(transform.position, dir.normalized, out RaycastHit hit, distance, obstacleMask))
+        {
+            Renderer rend = hit.collider.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                if (lastRenderer != null && lastRenderer != rend)
+                {
+                    lastRenderer.material = defaultMat;
+                }
+
+                rend.material = transparentMat;
+                lastRenderer = rend;
+            }
+        }
+        else
+        {
+            if (lastRenderer != null)
+            {
+                lastRenderer.material = defaultMat;
+                lastRenderer = null;
+            }
+        }
     }
-    // Update is called once per frame
-    void LateUpdate()
-    {
-        //if (!player.ult)
-        //{
-        //    transform.DOMove(new Vector3(playerPos.position.x, playerPos.position.y + 10, playerPos.position.z - 6) , 0.5f);
-        //    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(50,0,0), 0.3f);
-        //}
 
-        //else
-        //{
-        //    transform.position = new Vector3(ultCameraPos.position.x, ultCameraPos.position.y, ultCameraPos.position.z);
-        //    transform.rotation = Quaternion.Euler(ultCameraPos.eulerAngles);
-        //    cameraCompo.cullingMask &= ~(1 << LayerMask.NameToLayer("UI")); ;
-        //}
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    isAnimating = true;
-        //    timer = 0f;
-
-        //    startPos = Camera.main.transform.position;
-
-        //    // プレイヤーの正面にゴール
-        //    endPos = playerPos.position + playerPos.forward * 3f + Vector3.up + Vector3.right;
-
-        //    // 中間点（上に持ち上げて放物線に）
-        //    controlPoint = (startPos + endPos) / 2f + Vector3.right * 5f;
-        //}
-
-        //if (isAnimating)
-        //{
-        //    timer += Time.deltaTime;
-        //    float t = Mathf.Clamp01(timer / duration);
-
-        //    t = 1f - Mathf.Pow(1f - t, 5f);
-        //    // 二次ベジェ曲線で放物線軌道を描く
-        //    Vector3 a = Vector3.Lerp(startPos, controlPoint, t);
-        //    Vector3 b = Vector3.Lerp(controlPoint, endPos, t);
-        //    Vector3 camPos = Vector3.Lerp(a, b, t);
-
-        //    Camera.main.transform.position = camPos;
-        //    Vector3 targtPos = new Vector3(playerPos.position.x, playerPos.position.y + 1, playerPos.position.z);
-        //    Camera.main.transform.LookAt(targtPos);
-
-        //    if (t >= 1f)
-        //    {
-        //        isAnimating = false;
-        //    }
-        //}
-
-        //else
-        //{
-
-        //}
-
-
-    }
 
 }

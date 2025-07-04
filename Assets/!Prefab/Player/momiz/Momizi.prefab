@@ -242,6 +242,8 @@ MonoBehaviour:
   ultCamera: {fileID: 1696238222336490387}
   joystickBG: {fileID: 4455459422030655459}
   joystickKnob: {fileID: 8761078431622094806}
+  effects: []
+  ultEffect: {fileID: 9219621373531612422, guid: 729876b1510c8734d93a4682cc3e51fc, type: 3}
 --- !u!1 &580246313998893643
 GameObject:
   m_ObjectHideFlags: 0
@@ -2278,8 +2280,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4385592446066112139}
   - {fileID: 4455459422030655459}
+  - {fileID: 4385592446066112139}
   - {fileID: 2571865874717556452}
   - {fileID: 8725600196036898201}
   - {fileID: 6380240552159998743}
@@ -2610,8 +2612,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillCardPrefab: {fileID: 3883619036841795511, guid: 8d7bc978db544bc45a2b358f3258dba2, type: 3}
   skillCardDataList:
-  - {fileID: 11400000, guid: 4114a88bc711ece4186974e996679d0b, type: 2}
-  - {fileID: 11400000, guid: 1de9b65b279204049871980053cbbfff, type: 2}
   - {fileID: 11400000, guid: 8f2f5a468e49c0b4dac2ec30a4de992a, type: 2}
   cardPlace: {fileID: 2571865874717556452}
   skillSelect: 1
@@ -5640,8 +5640,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eabc981b18f75a8459c5b1e913218bd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 2711773584600781346}
-  ultCameraPos: {fileID: 1696238222336490387}
+  player: {fileID: 0}
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  transparentMat: {fileID: 0}
+  defaultMat: {fileID: 0}
 --- !u!114 &2259273815749019556
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5837,7 +5841,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 2711773584600781346}
   hitEffect: {fileID: 3832422384710884079, guid: b00eb2fda04c6504eb642d5520a470bc, type: 3}
-  trail: {fileID: 9025999046381250187}
 --- !u!136 &5322613126215961387
 CapsuleCollider:
   m_ObjectHideFlags: 0

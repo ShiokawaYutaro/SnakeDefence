@@ -21,6 +21,8 @@ public abstract class Character : MonoBehaviour
     public bool isAttacking;
     protected bool playAnim;
 
+    public const float _HEAL_AMOUNT = 10;
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
