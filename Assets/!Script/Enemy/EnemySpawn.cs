@@ -12,7 +12,7 @@ public class EnemySpawn : MonoBehaviour {
     private Player player;
     public int _enemyCount;
 
-    [SerializeField] GameObject nextStage;
+    [SerializeField] GameObject[] nextStage;
 
     public List<Enemy> enemyList = new List<Enemy>();
 
@@ -30,20 +30,25 @@ public class EnemySpawn : MonoBehaviour {
             Destroy(gameObject);
         }
 
-        if (nextStage == null) return;
+        for (int i = 0; i < nextStage.Length; i++)
+        {
+            if (nextStage[i] == null) return;
 
-        if(enemyList.Count > 0)
-        {
-            nextStage.SetActive(true);
+            if (enemyList.Count > 0)
+            {
+                nextStage[i].SetActive(true);
+            }
+            else if (onSpawn)
+            {
+                nextStage[i].SetActive(false);
+            }
+            else
+            {
+                nextStage[i].SetActive(false);
+            }
         }
-        else if(onSpawn)
-        {
-            nextStage.SetActive(false);
-        }
-        else
-        {
-            nextStage.SetActive(false);
-        }
+
+        
     }
 
     private void OnTriggerEnter(Collider other)

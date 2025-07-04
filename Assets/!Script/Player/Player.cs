@@ -112,10 +112,11 @@ public class Player : Character
         }
         else
         {
-            
+
             Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z - 6);
-           // Camera.main.transform.rotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(50, 0, 0));
-           Camera.main.transform.rotation = Quaternion.Euler(50, 0, 0);
+            // Camera.main.transform.rotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(50, 0, 0));
+            Camera.main.transform.rotation = Quaternion.Euler(50, 0, 0);
+            Camera.main.cullingMask |= (1 << LayerMask.NameToLayer("UI"));
             StickMove();
         }
 
@@ -245,6 +246,7 @@ public class Player : Character
     {
         if(other.gameObject.name == "武器")
         {
+            if (ult) return;
             Enemy enemy = other.transform.root.GetComponent<Enemy>();
             if (enemy.attack)
             {
@@ -347,12 +349,13 @@ public class Player : Character
     public void UseUlt()
     {
         ult = true;
+        attack = false;
         animator.SetTrigger("ult");
     }
     public void UnUseUlt()
     {
         ult = false;
-       
+        attack = false;
     }
 
 }

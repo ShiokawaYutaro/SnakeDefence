@@ -20,7 +20,15 @@ public class Weapon : MonoBehaviour
             // ç≈ãﬂê⁄ì_ÇåvéZ
             Vector3 hitPoint = Physics.ClosestPoint(myCollider.bounds.center, other, other.transform.position, other.transform.rotation);
 
-            enemy.SetDamage(player.damage + player.damageBonus);
+            if (player.ult)
+            {
+                enemy.SetDamage(player.damage*2 + player.damageBonus);
+            }
+            else
+            {
+                enemy.SetDamage(player.damage + player.damageBonus);
+            }
+            
             Instantiate(hitEffect, hitPoint, Quaternion.identity);
            // TriggerShockwave(hitPoint, enemy.gameObject);
             player.ChargeReset();
