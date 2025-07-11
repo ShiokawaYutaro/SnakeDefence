@@ -59,7 +59,7 @@ public class Player : Character
     protected override void Start()
     {
         attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
-        base.Start();
+        SetUp();
 
         healthImage = healthBar.transform.Find("front").GetComponent<Image>();
         chargeImage = chargeBar.transform.Find("front").GetComponent<Image>();
@@ -248,12 +248,15 @@ public class Player : Character
         {
             if (ult) return;
             Enemy enemy = other.transform.root.GetComponent<Enemy>();
-            if (enemy.attack)
+            if (enemy != null)
             {
-                SetDamage(enemy.damage);
-                enemy.attack = false;
+                if (enemy.attack)
+                {
+                    SetDamage(enemy.damage);
+                    enemy.attack = false;
+                }
             }
-            
+
         }
     }
 

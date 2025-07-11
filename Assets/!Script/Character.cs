@@ -1,4 +1,5 @@
 
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public abstract class Character : MonoBehaviour
@@ -26,9 +27,7 @@ public abstract class Character : MonoBehaviour
     // Start is called before the first frame update
     protected virtual void Start()
     {
-        HP = MaxHp;
-        rb = GetComponent<Rigidbody>();
-        animator = GetComponent<Animator>();
+       
     }
 
     // Update is called once per frame
@@ -56,4 +55,32 @@ public abstract class Character : MonoBehaviour
     {
         playAnim = false;
     }
+
+    public void SetUp()
+    {
+        HP = MaxHp;
+        rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
+    }
+
+    /// <summary>
+    /// アニメーションの終了待ち
+    /// </summary>
+    /// <param name="stateName"></param>
+    /// <returns></returns>
+    protected async UniTask WaitUntilAnimationStateExits(string stateName)
+    {
+        // "Attack"ステートに入るまで待機
+        while (!animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+        {
+            await UniTask.Yield();
+        }
+
+        // "Attack"ステートを抜けるまで待機
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+        {
+            await UniTask.Yield();
+        }
+    }
+
 }

@@ -33,8 +33,11 @@ public class SkillCardManager : MonoBehaviour
             yield break;
         }
 
-        cardList = new List<SkillCard>(2);
-        for (int i = 0; i < 2; i++)
+        //ˆø‚¯‚éƒJ[ƒh‚ÌÅ‘å”
+        int maxDrawCard = 2;
+
+        cardList = new List<SkillCard>(maxDrawCard);
+        for (int i = 0; i < maxDrawCard; i++)
         {
             cardList.Add(Instantiate(skillCardPrefab, cardPlace).GetComponent<SkillCard>());
 

@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public class Enemy : Character
 {
-    private Player player;
+    protected Player player;
 
     public Image healthImage;
     float duration = 0.2f;
@@ -43,7 +43,7 @@ public class Enemy : Character
         MaxHp = UnityEngine.Random.Range(10,30) * LVL;
         
         damage = 10;
-        base.Start();
+        SetUp();
     }
 
     protected override void FixedUpdate()
@@ -87,10 +87,10 @@ public class Enemy : Character
         randomTarget = new Vector3(transform.position.x + randomOffset.x, transform.position.y, transform.position.z + randomOffset.y);
     }
 
-    void Attack()
+    protected void Attack()
     {
         rb.velocity = Vector3.zero;
-        animator.SetBool("run", false);
+        //animator.SetBool("run", false);
         animator.SetTrigger("attack");
         isAttacking = true;
         playAnim = true;
@@ -199,7 +199,7 @@ public class Enemy : Character
         }
 
         // 地面チェック（必要なら）
-        if (!CheckGrounded())
+        if (!CheckGrounded(transform.forward))
         {
             rb.velocity = Vector3.zero;
             animator.SetBool("run", false);
@@ -261,12 +261,12 @@ public class Enemy : Character
     /// 地面の判定
     /// </summary>
     /// <returns></returns>
-    private bool CheckGrounded()
+    protected bool CheckGrounded(Vector3 dir)
     {
-        Vector3 origin1 = (transform.position + transform.forward.normalized * 2f);
-        Vector3 origin2 = (transform.position + transform.forward.normalized * 1.5f);
-        Vector3 origin3 = (transform.position + transform.forward.normalized * 1f);
-        Vector3 origin4 = (transform.position + transform.forward.normalized * 0.5f);
+        Vector3 origin1 = (transform.position + dir * 2f);
+        Vector3 origin2 = (transform.position + dir * 1.5f);
+        Vector3 origin3 = (transform.position + dir * 1f);
+        Vector3 origin4 = (transform.position + dir * 0.5f);
         Vector3 direction = Vector3.down;
         float rayLength = 2f;
         //int rayCount = 3;
@@ -347,7 +347,7 @@ public class Enemy : Character
     }
 
    
-    public void Dead()
+    public virtual void Dead()
     {
         Destroy(gameObject);
         GetComponent<Collider>().enabled = false;
