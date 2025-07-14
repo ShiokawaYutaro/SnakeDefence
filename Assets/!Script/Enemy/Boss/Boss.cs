@@ -45,6 +45,26 @@ public class Boss : Enemy
 
     Action actionCategory;
 
+    enum AttackType
+    {
+        /// <summary>
+        /// 攻撃を当てに行く
+        /// </summary>
+        Going,
+        /// <summary>
+        /// 遠距離攻撃
+        /// </summary>
+        LongRange,
+        /// <summary>
+        /// 差し返し
+        /// </summary>
+        Counter,
+
+        Max
+    }
+
+    //AttackType attackTypeCategory;
+
     protected override void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
@@ -101,7 +121,7 @@ public class Boss : Enemy
                 break;
             case Action.Attack:
                 Debug.Log("攻撃発動");
-                await StartAttackWarning();
+                await StartAttackWarning(UnityEngine.Random.Range(0, (int)AttackType.Max));
                 break;
         }
 
@@ -126,7 +146,10 @@ public class Boss : Enemy
         }
         return false;
     }
-
+    /// <summary>
+    /// 後ろに回避して間合いを取る
+    /// </summary>
+    /// <returns></returns>
     private async UniTask StartTakeDistance()
     {
 
@@ -134,7 +157,7 @@ public class Boss : Enemy
         //崖に落ちるくらいなら地面の中心に戻す
 
         //プレイヤーとの距離が遠ければ外れる
-        //if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
+        if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
 
         //後ろの距離を取る地点の取得
         Vector3 fallPoint = transform.localPosition + -transform.forward * 4f;
@@ -159,14 +182,42 @@ public class Boss : Enemy
     /// 攻撃をする範囲と攻撃の実行
     /// </summary>
     /// <returns></returns>
-    public async UniTask StartAttackWarning()
+    public async UniTask StartAttackWarning(int attackType)
+    {
+        switch ((AttackType)attackType)
+        {
+            case AttackType.Going:
+                await GoingAttack();
+                break;
+            case AttackType.LongRange:
+                await LongRangeAttack();
+                break;
+            case AttackType.Counter:
+                await CounterAttack();
+                break;
+        }
+        
+    }
+
+    private async UniTask GoingAttack()
+    {
+
+    }
+
+    private async UniTask LongRangeAttack()
+    {
+
+    }
+
+    private async UniTask CounterAttack()
     {
         if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
         currentChargeTime = 0f;
         warningLine.SetActive(true);
 
-        Image frontImage = warningLine.transform.Find("frontImage").GetComponent<Image>();
+        Image frontImage = warningLine.transform.Find("攻撃カウンター").GetComponent<Image>();
 
+        //攻撃のチャージ時間
         while (currentChargeTime <= attackChargeTime)
         {
             currentChargeTime += Time.deltaTime;
@@ -179,9 +230,10 @@ public class Boss : Enemy
 
         // アニメーションの終了を待つ
         await WaitUntilAnimationStateExits("攻撃１"); // ←"Attack"はアニメーターのステート名
-
+        //終了したら攻撃範囲の表示を消す
         warningLine.SetActive(false);
     }
+
     /// <summary>
     /// 首をプレイヤーに向かせる
     /// </summary>
@@ -207,17 +259,6 @@ public class Boss : Enemy
             Quaternion targetRot = Quaternion.LookRotation(targetDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 3f); // ←回転速度
         }
-    }
-    /// <summary>
-    /// 体を全体絶対にプレイヤーに向かせる
-    /// </summary>
-    private void LookPlayer()
-    {
-        Vector3 targetDir = player.transform.position;
-        targetDir.y = 0f; // 水平方向のみに限定
-
-        transform.DORotate(targetDir, 1);
-
     }
 
     CancellationTokenSource cts = new CancellationTokenSource();
