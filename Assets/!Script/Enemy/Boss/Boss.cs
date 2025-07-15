@@ -10,9 +10,8 @@ using System;
 public class Boss : Enemy
 {
     [SerializeField] private GameObject warningLine;
-    [SerializeField] private float attackChargeTime = 3f;
+    private float attackChargeTime = 3f;
 
-    private float currentChargeTime = 0f;
     //private bool isChargingAttack = false;
     private readonly float attackArea = 5;
 
@@ -27,6 +26,10 @@ public class Boss : Enemy
         /// 待機
         /// </summary>
         Idel,
+        /// <summary>
+        /// 様子を見る
+        /// </summary>
+        Observe,
         /// <summary>
         /// 間合いを取る
         /// </summary>
@@ -67,10 +70,12 @@ public class Boss : Enemy
 
     protected override void Start()
     {
+        warningLine.SetActive(false);
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         //MaxHp = UnityEngine.Random.Range(10,);
         MaxHp = 200;
         damage = 50;
+        speed = 3;
         SetUp();
     }
 
@@ -79,9 +84,8 @@ public class Boss : Enemy
         //死んでたらリターン
         if (dead) return;
 
-        speed = 3;
+
         healthImage.transform.LookAt(Camera.main.transform.position);
-        //rb.velocity = transform.forward * speed;
 
         ActionProcess();
 
@@ -101,8 +105,7 @@ public class Boss : Enemy
     {
         //首を動かす
         RotateTowardsPlayer();
-        //アクションを実行するかどうか
-        //実行しないならリターン
+        //アクションを実行するかどうか [実行しないならリターン]
         if (!ExecuteAction()) return;
         //ランダムでアクションを発動させる（もう少し確率をいじったほうがいい）
         actionCategory = (Action)UnityEngine.Random.Range(0, (int)Action.Max);
@@ -110,7 +113,11 @@ public class Boss : Enemy
         {
             case Action.Idel:
                 Debug.Log("待機");
-
+                await StartIdel();
+                break;
+            case Action.Observe:
+                Debug.Log("観察");
+                await StartObserve();
                 break;
             case Action.TakeDistance:
                 Debug.Log("間合いを取る");
@@ -121,10 +128,11 @@ public class Boss : Enemy
                 break;
             case Action.Attack:
                 Debug.Log("攻撃発動");
-                await StartAttackWarning(UnityEngine.Random.Range(0, (int)AttackType.Max));
+                await StartAttack(UnityEngine.Random.Range(0, (int)AttackType.Max));
                 break;
         }
 
+        //アクションが終わったら
         action = false;
 
     }
@@ -145,6 +153,22 @@ public class Boss : Enemy
             return true;
         }
         return false;
+    }
+    /// <summary>
+    /// 待機状態になって休憩するようにしたいなぁ（モウハンみたいに）
+    /// </summary>
+    /// <returns></returns>
+    private async UniTask StartIdel()
+    {
+
+    }
+    /// <summary>
+    /// 敵を観察する（なんかかっこいいから！）
+    /// </summary>
+    /// <returns></returns>
+    private async UniTask StartObserve()
+    {
+
     }
     /// <summary>
     /// 後ろに回避して間合いを取る
@@ -178,12 +202,17 @@ public class Boss : Enemy
 
     }
 
+    #region 攻撃関係
+
     /// <summary>
     /// 攻撃をする範囲と攻撃の実行
     /// </summary>
     /// <returns></returns>
-    public async UniTask StartAttackWarning(int attackType)
+    public async UniTask StartAttack(int attackType)
     {
+        //プレイヤーが近くにいなければ攻撃しない
+        if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
+
         switch ((AttackType)attackType)
         {
             case AttackType.Going:
@@ -208,31 +237,51 @@ public class Boss : Enemy
     {
 
     }
-
+    /// <summary>
+    /// プレイヤーが近づいて攻撃してくるのを攻撃する
+    /// </summary>
+    /// <returns></returns>
     private async UniTask CounterAttack()
     {
-        if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
-        currentChargeTime = 0f;
+        //ここの文の書き方がきもいからなんか変えたい
+        const float attackTime = 3;
+        const string attackName = "攻撃カウンター";
+
+        //攻撃のチャージが完了するかどうか
+        if (await ChargeTime(attackTime, attackName)) return;
+        // 攻撃の実行
+        Attack(); 
+
+        // アニメーションの終了を待つ（基底のクラスの関数）
+        await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
+        //終了したら攻撃範囲の表示を消す
+        warningLine.SetActive(false);
+    }
+    /// <summary>
+    /// 攻撃時間とチャージ画像
+    /// </summary>
+    /// <param name="time"></param>
+    /// <param name="warningLineName"></param>
+    /// <returns></returns>
+    private async UniTask<bool> ChargeTime(float time,string warningLineName)
+    {
+        float currentChargeTime = 0f;
         warningLine.SetActive(true);
 
-        Image frontImage = warningLine.transform.Find("攻撃カウンター").GetComponent<Image>();
+        Image frontImage = warningLine.transform.Find(warningLineName).GetComponent<Image>();
 
         //攻撃のチャージ時間
-        while (currentChargeTime <= attackChargeTime)
+        while (currentChargeTime <= time)
         {
             currentChargeTime += Time.deltaTime;
             frontImage.fillAmount = currentChargeTime / attackChargeTime;
             await UniTask.DelayFrame(1);
         }
 
-        Debug.Log("攻撃します！");
-        Attack(); // アニメーション実行（Trigger）
-
-        // アニメーションの終了を待つ
-        await WaitUntilAnimationStateExits("攻撃１"); // ←"Attack"はアニメーターのステート名
-        //終了したら攻撃範囲の表示を消す
-        warningLine.SetActive(false);
+        return true;
     }
+
+    #endregion
 
     /// <summary>
     /// 首をプレイヤーに向かせる
