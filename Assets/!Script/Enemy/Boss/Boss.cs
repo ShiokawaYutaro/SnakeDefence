@@ -167,7 +167,7 @@ public class Boss : Enemy
     /// <returns></returns>
     private async UniTask StartObserve()
     {
-
+        animator.SetBool("観察",true);
     }
     /// <summary>
     /// 後ろに回避して間合いを取る
