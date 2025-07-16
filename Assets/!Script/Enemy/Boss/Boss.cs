@@ -10,7 +10,6 @@ using System;
 public class Boss : Enemy
 {
     [SerializeField] private GameObject warningLine;
-    private float attackChargeTime = 3f;
 
     //private bool isChargingAttack = false;
     private readonly float attackArea = 5;
@@ -250,7 +249,7 @@ public class Boss : Enemy
         //攻撃のチャージが完了するかどうか
         if (await ChargeTime(attackTime, attackName)) return;
         // 攻撃の実行
-        Attack(); 
+        Attack(attackName); 
 
         // アニメーションの終了を待つ（基底のクラスの関数）
         await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
@@ -274,7 +273,7 @@ public class Boss : Enemy
         while (currentChargeTime <= time)
         {
             currentChargeTime += Time.deltaTime;
-            frontImage.fillAmount = currentChargeTime / attackChargeTime;
+            frontImage.fillAmount = currentChargeTime / time;
             await UniTask.DelayFrame(1);
         }
 

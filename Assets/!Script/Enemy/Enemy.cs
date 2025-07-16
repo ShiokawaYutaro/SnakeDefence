@@ -87,11 +87,11 @@ public class Enemy : Character
         randomTarget = new Vector3(transform.position.x + randomOffset.x, transform.position.y, transform.position.z + randomOffset.y);
     }
 
-    protected void Attack()
+    protected void Attack(string attackName)
     {
         rb.velocity = Vector3.zero;
         //animator.SetBool("run", false);
-        animator.SetTrigger("attack");
+        animator.SetTrigger(attackName);
         isAttacking = true;
         playAnim = true;
     }
@@ -188,7 +188,7 @@ public class Enemy : Character
                     float distance = Vector3.Distance(transform.position, lastTarget.position);
                     if (distance <= 1.5f)
                     {
-                        Attack();
+                        Attack("attack");
                     }
 
                     return; // プレイヤー見つけたら終了
