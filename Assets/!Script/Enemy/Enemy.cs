@@ -303,7 +303,7 @@ public class Enemy : Character
     public void SetDamage(float _damage)
     {
         if(dead) return;
-        HP -= _damage;
+        HP -= _damage - defence;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
         GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
@@ -312,20 +312,11 @@ public class Enemy : Character
         Destroy(damageText, 1);
 
     }
-
-    CancellationTokenSource cts = new CancellationTokenSource();
-
-    private void OnDestroy()
-    {
-        cts.Cancel();
-    }
-
     public async void SetAttributeDamage(float _damage, int attribute, Color32 color)
     {
         if (dead) return;
         for (int i = 0; i < attribute; i++)
         {
-            if (dead) return;
             HP -= _damage;
             float targetRate = HcurrentRate - _damage / MaxHp;
             UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
@@ -346,7 +337,13 @@ public class Enemy : Character
         }
     }
 
-   
+    CancellationTokenSource cts = new CancellationTokenSource();
+
+    private void OnDestroy()
+    {
+        cts.Cancel();
+    }
+
     public virtual void Dead()
     {
         Destroy(gameObject);

@@ -76,6 +76,7 @@ public class Player : Character
         if(HP <= 0)
         {
             HP = 0;
+            down = true;
         }
         healthBar.transform.LookAt(Camera.main.transform.position);
         healthText.text = HP.ToString("f0") + "/" + MaxHp.ToString("f0");

@@ -5,14 +5,36 @@ using UnityEngine.UI;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Linq;
+
+public enum AttackType
+{
+    /// <summary>
+    /// 攻撃を当てに行く
+    /// </summary>
+    Going,
+    /// <summary>
+    /// 遠距離攻撃
+    /// </summary>
+    LongRange,
+    /// <summary>
+    /// 差し返し
+    /// </summary>
+    Counter,
+    /// <summary>
+    /// 間合いを取る
+    /// </summary>
+    TakeDistance,
+
+    Max
+}
 
 public class Boss : Enemy
 {
-    [SerializeField] private GameObject warningLine;
+    [SerializeField] private GameObject[] warningLine;
 
     //private bool isChargingAttack = false;
-    private readonly float attackArea = 5;
+    private readonly float attackArea = 3;
 
     [SerializeField] Transform neck;
 
@@ -30,10 +52,6 @@ public class Boss : Enemy
         /// </summary>
         Observe,
         /// <summary>
-        /// 間合いを取る
-        /// </summary>
-        TakeDistance,
-        /// <summary>
         /// 追う
         /// </summary>
         Chase,
@@ -47,33 +65,48 @@ public class Boss : Enemy
 
     Action actionCategory;
 
-    enum AttackType
-    {
-        /// <summary>
-        /// 攻撃を当てに行く
-        /// </summary>
-        Going,
-        /// <summary>
-        /// 遠距離攻撃
-        /// </summary>
-        LongRange,
-        /// <summary>
-        /// 差し返し
-        /// </summary>
-        Counter,
+    
 
-        Max
-    }
+   // public AttackType attackType;
 
+    private BossState currentState;
+    private BossState nextState;
+
+    private Dictionary<Action, BossState> stateMap;
+    private Dictionary<AttackType, AttackStrategy> attackStrategies;
     //AttackType attackTypeCategory;
 
     protected override void Start()
     {
-        warningLine.SetActive(false);
+        // ステート登録
+        stateMap = new Dictionary<Action, BossState>
+        {
+            { Action.Idel, new IdelState() },
+            { Action.Observe, new ObserveState() },
+            { Action.Chase, new ChaseState() },
+            { Action.Attack, new AttackState() },
+        };
+
+        currentState = stateMap[Action.Idel];
+
+        attackStrategies = new Dictionary<AttackType, AttackStrategy>
+        {
+            { AttackType.Going, new GoingAttack() },
+            { AttackType.LongRange, new LongRangeAttack() },
+            { AttackType.Counter, new CounterAttack() },
+            { AttackType.TakeDistance, new TakeDistanceState() }
+        };
+
+        for (int i = 0; i < warningLine.Length; i++)
+        {
+            warningLine[i].SetActive(false);
+        }
+        
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         //MaxHp = UnityEngine.Random.Range(10,);
         MaxHp = 200;
         damage = 50;
+        defence = 30;
         speed = 3;
         SetUp();
     }
@@ -82,11 +115,11 @@ public class Boss : Enemy
     {
         //死んでたらリターン
         if (dead) return;
-
+        StateTick().Forget();
 
         healthImage.transform.LookAt(Camera.main.transform.position);
 
-        ActionProcess();
+        //ActionProcess();
 
         if (HP <= 0)
         {
@@ -100,47 +133,13 @@ public class Boss : Enemy
 
     }
 
-    private async void ActionProcess()
-    {
-        //首を動かす
-        RotateTowardsPlayer();
-        //アクションを実行するかどうか [実行しないならリターン]
-        if (!ExecuteAction()) return;
-        //ランダムでアクションを発動させる（もう少し確率をいじったほうがいい）
-        actionCategory = (Action)UnityEngine.Random.Range(0, (int)Action.Max);
-        switch (actionCategory)
-        {
-            case Action.Idel:
-                Debug.Log("待機");
-                await StartIdel();
-                break;
-            case Action.Observe:
-                Debug.Log("観察");
-                await StartObserve();
-                break;
-            case Action.TakeDistance:
-                Debug.Log("間合いを取る");
-                await StartTakeDistance();
-                break;
-            case Action.Chase:
-                Debug.Log("追う");
-                break;
-            case Action.Attack:
-                Debug.Log("攻撃発動");
-                await StartAttack(UnityEngine.Random.Range(0, (int)AttackType.Max));
-                break;
-        }
-
-        //アクションが終わったら
-        action = false;
-
-    }
     /// <summary>
     /// アクションを実行する時間
     /// </summary>
     /// <returns></returns>
     private bool ExecuteAction()
     {
+
         if (action) return false;
 
         actionTime += Time.deltaTime;
@@ -153,39 +152,295 @@ public class Boss : Enemy
         }
         return false;
     }
-    /// <summary>
-    /// 待機状態になって休憩するようにしたいなぁ（モウハンみたいに）
-    /// </summary>
-    /// <returns></returns>
-    private async UniTask StartIdel()
-    {
 
-    }
-    /// <summary>
-    /// 敵を観察する（なんかかっこいいから！）
-    /// </summary>
-    /// <returns></returns>
-    private async UniTask StartObserve()
+    private Action previousAction = Action.Max;
+
+    private async UniTask StateTick()
     {
-        animator.SetBool("観察",true);
+        RotateTowardsPlayer();
+
+        if (!ExecuteAction()) return;
+
+        float playerDistance = Vector3.Distance(transform.position, player.transform.position);
+
+        Dictionary<Action, float> actionWeights = new();
+
+        if (playerDistance < 6f)
+        {
+            // プレイヤーが近い：攻撃っぽい行動を強調
+            actionWeights[Action.Attack] = 50f;
+            actionWeights[Action.Chase] = 30f;
+            actionWeights[Action.Observe] = 15f;
+        }
+        else
+        {
+            // プレイヤーが遠い：様子見や接近系が中心
+            actionWeights[Action.Idel] = 50f;
+            actionWeights[Action.Chase] = 40f;
+            actionWeights[Action.Observe] = 25f;
+        }
+
+        // 同じ行動を避けながらランダム選出（重み付き）
+        Action nextAction = GetRandomWeightedAction(actionWeights, previousAction);
+
+        previousAction = nextAction;
+        nextState = stateMap[nextAction];
+        await SetNextState(nextState);
+    }
+
+    private Action GetRandomWeightedAction(Dictionary<Action, float> weights, Action exclude)
+    {
+        // 1. 前回と同じ行動は除く
+        var filteredWeights = weights
+            .Where(kvp => kvp.Key != exclude)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        // 2. 重みの合計を出す
+        float totalWeight = filteredWeights.Values.Sum();
+
+        // 3. 0〜合計の間でランダムな数を生成
+        float rand = UnityEngine.Random.Range(0f, totalWeight);
+        Debug.Log(rand + "F");
+        // 4. ランダム値を超えるまで累計していって、一致したところを選ぶ
+        float cumulative = 0f;
+
+        foreach (var kvp in filteredWeights)
+        {
+            cumulative += kvp.Value;
+            if (rand <= cumulative)
+                return kvp.Key;
+        }
+
+        // 念のため（通常ここに来ることはない）
+        return filteredWeights.Keys.First();
+    }
+
+
+    public async UniTask SetNextState(BossState nextState)
+    {
+        if (currentState != null)
+        {
+            await currentState.Exit(this);
+        }
+
+        currentState = nextState;
+
+        if (currentState != null)
+        {
+            await currentState.Enter(this);
+            await currentState.Execute(this);
+        }
+
+        action = false;
     }
     /// <summary>
-    /// 後ろに回避して間合いを取る
+    /// 追いかける
     /// </summary>
     /// <returns></returns>
-    private async UniTask StartTakeDistance()
+    public async UniTask StartChase()
+    {
+        while (true)
+        {
+            Vector3 dir = (player.transform.position - transform.position).normalized;
+            // プレイヤーとの距離チェック
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            Debug.Log($"プレイヤーとの距離: {distance}");
+
+            if (distance < attackArea)
+            {
+                // 攻撃に移るなど
+                await SetNextState(new AttackState());
+                break;
+            }
+            else
+            {
+                rb.velocity = dir * speed * 2;
+            }
+
+            // 0.1秒ごとにチェック（負荷軽減）
+            await UniTask.Delay(100);
+        }
+    }
+
+    #region 攻撃関係
+
+    /// <summary>
+    /// 攻撃をする範囲と攻撃の実行
+    /// </summary>
+    /// <returns></returns>
+    private AttackType lastAttackType;
+
+    public async UniTask StartAttack(int attackType)
+    {
+        var selectedType = (AttackType)attackType;
+
+        // もし同じ攻撃タイプだったら通常攻撃に強制変更
+        if (lastAttackType == selectedType)
+        {
+            Debug.Log("同じ攻撃だったので当てに行く攻撃に切り替え");
+            selectedType = AttackType.Going;
+        }
+
+        rb.velocity = Vector3.zero;
+        selectedType = AttackType.Counter;
+        if (attackStrategies.TryGetValue(selectedType, out var strategy))
+        {
+            lastAttackType = selectedType;
+            await strategy.Execute(this);
+        }
+        else
+        {
+            Debug.LogWarning($"未定義の攻撃タイプ: {selectedType}");
+        }
+    }
+
+    public async UniTask GoingAttack()
+    {
+        //ここの文の書き方がきもいからなんか変えたい
+        const float attackTime = 2;
+        const string attackName = "攻撃当てる";
+
+        //成功したら、攻撃のチャージが完了するかどうか
+        //if (!await ChargeTime(attackTime, attackName)) return;
+        // プレイヤーがぎりかわせる攻撃の実行
+        Attack(attackName);
+
+        // アニメーションの終了を待つ（基底のクラスの関数）
+        await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
+        //終了したら攻撃範囲の表示を消す
+        for (int i = 0; i < warningLine.Length; i++)
+        {
+            warningLine[i].SetActive(false);
+        }
+           
+    }
+
+    public async UniTask LongRangeAttack()
+    {
+        //ここの文の書き方がきもいからなんか変えたい
+        const float attackTime = 2;
+        const string attackName = "攻撃遠距離";
+
+        //成功したら、攻撃のチャージが完了するかどうか
+        //if (!await ChargeTime(attackTime, attackName)) return;
+        // プレイヤーがぎりかわせる攻撃の実行
+        Attack(attackName);
+
+        // アニメーションの終了を待つ（基底のクラスの関数）
+        await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
+        //終了したら攻撃範囲の表示を消す
+        for (int i = 0; i < warningLine.Length; i++)
+        {
+            warningLine[i].SetActive(false);
+        }
+    }
+
+    private bool isCounter = false;
+    private bool isCounterWait = false;
+    /// <summary>
+    /// プレイヤーが近づいて攻撃してくるのを攻撃する
+    /// </summary>
+    /// <returns></returns>
+    public async UniTask CounterAttack()
+    {
+        //ここの文の書き方がきもいからなんか変えたい
+        const float attackTime = 1;
+        const string attackName = "攻撃カウンター";
+
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("攻撃カウンター待ち"))
+        {
+            Debug.Log("すでにカウンター待機中なので入らない");
+            return;
+        }
+
+
+        //カウンター状態に入る
+        if (!await CheckCounter()) return;
+        
+        //成功したら、攻撃のチャージが完了するかどうか
+        if (!await ChargeTime(attackTime, attackName)) return;
+        // プレイヤーがぎりかわせる攻撃の実行
+        Attack(attackName); 
+
+        // アニメーションの終了を待つ（基底のクラスの関数）
+        await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
+        //終了したら攻撃範囲の表示を消す
+        for (int i = 0; i < warningLine.Length; i++)
+        {
+            warningLine[i].SetActive(false);
+        }
+        animator.SetBool("攻撃カウンター待ち", false);
+    }
+    public async UniTask<bool> CheckCounter()
+    {
+        isCounter = false;
+        isCounterWait = true;
+
+        animator.SetBool("攻撃カウンター待ち", true);
+
+        // 攻撃されるまで最大3秒待つ
+        float time = 0f;
+        const float maxTime = 3f;
+
+        while (!isCounter && time < maxTime)
+        {
+            await UniTask.Yield();
+            time += Time.deltaTime;
+        }
+
+        if (!isCounter)
+        {
+            // 成功しなかった
+            Debug.Log("カウンター失敗");
+            isCounterWait = false;
+            animator.SetBool("攻撃カウンター待ち", false);
+            return false;
+        }
+
+        // 成功済みなので、アニメーション側で処理継続
+        return true;
+    }
+
+    /// <summary>
+    /// 攻撃時間とチャージ画像
+    /// </summary>
+    /// <param name="time"></param>
+    /// <param name="warningLineName"></param>
+    /// <returns></returns>
+    private async UniTask<bool> ChargeTime(float time,string warningLineName)
+    {
+        float currentChargeTime = 0f;
+        GameObject warningType = null;
+        for (int i = 0; i < warningLine.Length; i++)
+        {
+            if (warningLineName == warningLine[i].gameObject.name)
+            {
+                warningType = warningLine[i];
+            }            
+        }
+
+        Image frontImage =  warningType.transform.Find("frontImage").GetComponent<Image>();
+
+        //攻撃のチャージ時間
+        while (currentChargeTime <= time)
+        {
+            currentChargeTime += Time.deltaTime;
+            frontImage.fillAmount = currentChargeTime / time;
+            await UniTask.DelayFrame(1);
+        }
+
+        return true;
+    }
+    public async UniTask StartTakeDistance()
     {
 
         //プレイヤーから一定の距離を取る処理（ワンちゃん崖に落ちのでどうしよう）
-        //崖に落ちるくらいなら地面の中心に戻す
-
-        //プレイヤーとの距離が遠ければ外れる
-        if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
+        //崖に落ちるくらいなら地面の中心に戻す×
 
         //後ろの距離を取る地点の取得
         Vector3 fallPoint = transform.localPosition + -transform.forward * 4f;
 
-        if (!CheckGrounded(fallPoint/2))
+        if (!CheckGrounded(fallPoint / 2))
         {
             Debug.Log("後ろには飛べない");
             return;
@@ -200,92 +455,11 @@ public class Boss : Enemy
         transform.DOLocalMove(fallPoint, 1f);
 
     }
-
-    #region 攻撃関係
-
-    /// <summary>
-    /// 攻撃をする範囲と攻撃の実行
-    /// </summary>
-    /// <returns></returns>
-    public async UniTask StartAttack(int attackType)
-    {
-        //プレイヤーが近くにいなければ攻撃しない
-        if (Vector3.Distance(transform.position, player.transform.position) >= attackArea) return;
-
-        switch ((AttackType)attackType)
-        {
-            case AttackType.Going:
-                await GoingAttack();
-                break;
-            case AttackType.LongRange:
-                await LongRangeAttack();
-                break;
-            case AttackType.Counter:
-                await CounterAttack();
-                break;
-        }
-        
-    }
-
-    private async UniTask GoingAttack()
-    {
-
-    }
-
-    private async UniTask LongRangeAttack()
-    {
-
-    }
-    /// <summary>
-    /// プレイヤーが近づいて攻撃してくるのを攻撃する
-    /// </summary>
-    /// <returns></returns>
-    private async UniTask CounterAttack()
-    {
-        //ここの文の書き方がきもいからなんか変えたい
-        const float attackTime = 3;
-        const string attackName = "攻撃カウンター";
-
-        //攻撃のチャージが完了するかどうか
-        if (await ChargeTime(attackTime, attackName)) return;
-        // 攻撃の実行
-        Attack(attackName); 
-
-        // アニメーションの終了を待つ（基底のクラスの関数）
-        await WaitUntilAnimationStateExits(attackName); // ←"Attack"はアニメーターのステート名
-        //終了したら攻撃範囲の表示を消す
-        warningLine.SetActive(false);
-    }
-    /// <summary>
-    /// 攻撃時間とチャージ画像
-    /// </summary>
-    /// <param name="time"></param>
-    /// <param name="warningLineName"></param>
-    /// <returns></returns>
-    private async UniTask<bool> ChargeTime(float time,string warningLineName)
-    {
-        float currentChargeTime = 0f;
-        warningLine.SetActive(true);
-
-        Image frontImage = warningLine.transform.Find(warningLineName).GetComponent<Image>();
-
-        //攻撃のチャージ時間
-        while (currentChargeTime <= time)
-        {
-            currentChargeTime += Time.deltaTime;
-            frontImage.fillAmount = currentChargeTime / time;
-            await UniTask.DelayFrame(1);
-        }
-
-        return true;
-    }
-
     #endregion
-
     /// <summary>
     /// 首をプレイヤーに向かせる
     /// </summary>
-    private void RotateTowardsPlayer()
+    public void RotateTowardsPlayer()
     {
         if (actionCategory == Action.Attack) return;
         Vector3 targetDir = player.transform.position - transform.position;
@@ -320,5 +494,16 @@ public class Boss : Enemy
     {
         Destroy(gameObject);
         GetComponent<Collider>().enabled = false;
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.name == "武器" && other.transform.root.tag == "Player")
+        {
+            if(isCounterWait)
+            {
+                isCounter = true;
+            }
+        }
     }
 }
