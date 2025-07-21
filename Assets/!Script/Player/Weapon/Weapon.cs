@@ -7,7 +7,7 @@ public class Weapon : MonoBehaviour
     [SerializeField] Player player;
     [SerializeField] GameObject hitEffect;
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Enemy")
         {

@@ -127,7 +127,7 @@ public class Boss : Enemy
             dead = true;
             rb.isKinematic = true;
             player.LVLGauge(1);
-            CoinManager.AddCoin(1 + LVL);
+            CoinManager.instance.AddCoin(1 + LVL);
         }
 
 
@@ -181,29 +181,28 @@ public class Boss : Enemy
         }
 
         // 同じ行動を避けながらランダム選出（重み付き）
-        Action nextAction = GetRandomWeightedAction(actionWeights, previousAction);
+        Action nextAction = GetRandomWeighted(actionWeights, previousAction);
 
         previousAction = nextAction;
         nextState = stateMap[nextAction];
         await SetNextState(nextState);
     }
 
-    private Action GetRandomWeightedAction(Dictionary<Action, float> weights, Action exclude)
+    private T GetRandomWeighted<T>(Dictionary<T, float> weights, T exclude)
     {
-        // 1. 前回と同じ行動は除く
+        // 1. 除外する要素を省いた辞書を作成
         var filteredWeights = weights
-            .Where(kvp => kvp.Key != exclude)
+            .Where(kvp => !EqualityComparer<T>.Default.Equals(kvp.Key, exclude))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        // 2. 重みの合計を出す
+        // 2. 合計重み
         float totalWeight = filteredWeights.Values.Sum();
 
-        // 3. 0〜合計の間でランダムな数を生成
+        // 3. ランダム値を生成
         float rand = UnityEngine.Random.Range(0f, totalWeight);
-        Debug.Log(rand + "F");
-        // 4. ランダム値を超えるまで累計していって、一致したところを選ぶ
-        float cumulative = 0f;
 
+        // 4. 累積して選ぶ
+        float cumulative = 0f;
         foreach (var kvp in filteredWeights)
         {
             cumulative += kvp.Value;
@@ -211,7 +210,7 @@ public class Boss : Enemy
                 return kvp.Key;
         }
 
-        // 念のため（通常ここに来ることはない）
+        // 念のため
         return filteredWeights.Keys.First();
     }
 
@@ -270,27 +269,40 @@ public class Boss : Enemy
     /// <returns></returns>
     private AttackType lastAttackType;
 
-    public async UniTask StartAttack(int attackType)
+    public async UniTask StartAttack()
     {
-        var selectedType = (AttackType)attackType;
+        rb.velocity = Vector3.zero;
 
-        // もし同じ攻撃タイプだったら通常攻撃に強制変更
-        if (lastAttackType == selectedType)
+        float playerDistance = Vector3.Distance(transform.position, player.transform.position);
+
+        // 距離に応じた攻撃の重み
+        Dictionary<AttackType, float> attackWeights = new();
+
+        if (playerDistance < attackArea)
+        {
+            attackWeights[AttackType.Going] = 50f;
+            attackWeights[AttackType.Counter] = 30f;
+            attackWeights[AttackType.TakeDistance] = 10f;
+        }
+        else
+        {
+            attackWeights[AttackType.LongRange] = 1;
+        }
+
+        // 同じ攻撃を避けてランダム選出
+        var selectedType = GetRandomWeighted(attackWeights, lastAttackType);
+
+        // 念のためもう一回回避（任意）
+        if (selectedType == lastAttackType)
         {
             Debug.Log("同じ攻撃だったので当てに行く攻撃に切り替え");
             selectedType = AttackType.Going;
         }
 
-        rb.velocity = Vector3.zero;
-        selectedType = AttackType.Counter;
         if (attackStrategies.TryGetValue(selectedType, out var strategy))
         {
             lastAttackType = selectedType;
             await strategy.Execute(this);
-        }
-        else
-        {
-            Debug.LogWarning($"未定義の攻撃タイプ: {selectedType}");
         }
     }
 
@@ -300,8 +312,8 @@ public class Boss : Enemy
         const float attackTime = 2;
         const string attackName = "攻撃当てる";
 
-        //成功したら、攻撃のチャージが完了するかどうか
-        //if (!await ChargeTime(attackTime, attackName)) return;
+        //攻撃のチャージが完了するかどうか
+        if (!await ChargeTime(attackTime, attackName)) return;
         // プレイヤーがぎりかわせる攻撃の実行
         Attack(attackName);
 
@@ -418,7 +430,7 @@ public class Boss : Enemy
                 warningType = warningLine[i];
             }            
         }
-
+        warningType.SetActive(true);
         Image frontImage =  warningType.transform.Find("frontImage").GetComponent<Image>();
 
         //攻撃のチャージ時間

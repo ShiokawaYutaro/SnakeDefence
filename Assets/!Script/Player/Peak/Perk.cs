@@ -56,13 +56,13 @@ public class Perk : MonoBehaviour
 
     private void Buy()
     {
-        if (CoinManager.coin <= 10)
+        if (CoinManager.instance.coin <= 10)
         {
             player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).DOShakePosition(1f,20);
             return;
         }
 
-        CoinManager.coin -= 10;
+        CoinManager.instance.coin -= 10;
 
     }
 }

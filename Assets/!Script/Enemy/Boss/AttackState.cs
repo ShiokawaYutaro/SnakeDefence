@@ -13,7 +13,7 @@ public class AttackState : BossState
     public override async UniTask Execute(Boss boss)
     {
         // 攻撃のロジック実行
-        await boss.StartAttack(Random.Range((int)AttackType.Going, (int)AttackType.Max));
+        await boss.StartAttack();
     }
 
     public override async UniTask Exit(Boss boss)

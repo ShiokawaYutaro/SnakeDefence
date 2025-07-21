@@ -132,35 +132,28 @@ public class Player : Character
     {
         float posY = rb.velocity.y;
         posY -= 0.1f;
-        //// 現在のゲームパッド情報
-        //var current = Gamepad.current;
+        // 左スティック入力取得
 
-        //// ゲームパッド接続チェック
-        //if (current == null)
-        //    return;
+        float moveX = Input.GetAxisRaw("Horizontal"); 
+        float moveZ = Input.GetAxisRaw("Vertical");
 
-        //// 左スティック入力取得
-        //var leftStickValue = current.leftStick.ReadValue();
-        //float moveX = leftStickValue.x;
-        //float moveZ = leftStickValue.y;
+        // 移動
+        Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
 
-        //// 移動
-        //Vector3 PCmoveDir = new Vector3(moveX, 0f, moveZ).normalized;
-       
-        //rb.velocity = new Vector3(PCmoveDir.x, posY, PCmoveDir.z) * speed;
+        rb.velocity = new Vector3(PCmoveDir.x, 0, PCmoveDir.z) * speed;
 
-        //// 回転（移動方向があるときのみ）
-        //if (PCmoveDir.magnitude > 0.01f)
-        //{
-        //    Quaternion toRotation = Quaternion.LookRotation(PCmoveDir);
-        //    transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
-        //    animator.SetBool("run", true);
-        //}
-        //else
-        //{
-        //    rb.velocity = Vector3.zero;
-        //    animator.SetBool("run", false);
-        //}
+        // 回転（移動方向があるときのみ）
+        if (PCmoveDir.magnitude > 0.01f)
+        {
+            Quaternion toRotation = Quaternion.LookRotation(PCmoveDir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+            animator.SetBool("run", true);
+        }
+        else
+        {
+            rb.velocity = Vector3.zero;
+            animator.SetBool("run", false);
+        }
         if (Input.touchCount > 0)
         {
             foreach (Touch touch in Input.touches)
@@ -185,6 +178,7 @@ public class Player : Character
                         Vector2 offset = touch.position - startTouchPos;
                         Vector2 clampedOffset = Vector2.ClampMagnitude(offset, joystickRange);
                         joystickKnob.position = startTouchPos + clampedOffset;
+
 
                         Vector3 moveDir = new Vector3(clampedOffset.x, 0, clampedOffset.y).normalized;
                         rb.velocity = new Vector3(moveDir.x, rb.velocity.y, moveDir.z) * speed;
@@ -284,9 +278,9 @@ public class Player : Character
 
     public void SetDamage(float _damage)
     {
-        _damage -= defence;
-        HP -= _damage;
-        float targetRate = HcurrentRate - _damage / MaxHp;
+        float damage = Mathf.Max(_damage - defence, 0);
+        HP -= damage;
+        float targetRate = HcurrentRate - damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
 
        

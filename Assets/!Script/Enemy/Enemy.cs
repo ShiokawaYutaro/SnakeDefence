@@ -64,7 +64,7 @@ public class Enemy : Character
             dead = true;
             rb.isKinematic = true;
             player.LVLGauge(1);
-            CoinManager.AddCoin(1 + LVL);
+            CoinManager.instance.AddCoin(1 + LVL);
         }
         ViewAction();
         if (!isChasingPlayer)
@@ -303,7 +303,8 @@ public class Enemy : Character
     public void SetDamage(float _damage)
     {
         if(dead) return;
-        HP -= _damage - defence;
+        float damage = Mathf.Max(_damage - defence, 0);
+        HP -= damage;
         float targetRate = HcurrentRate - _damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
         GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
