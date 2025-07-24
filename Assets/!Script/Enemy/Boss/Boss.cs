@@ -309,7 +309,7 @@ public class Boss : Enemy
     public async UniTask GoingAttack()
     {
         //ここの文の書き方がきもいからなんか変えたい
-        const float attackTime = 2;
+        const float attackTime = 1;
         const string attackName = "攻撃当てる";
 
         //攻撃のチャージが完了するかどうか
@@ -356,7 +356,7 @@ public class Boss : Enemy
     public async UniTask CounterAttack()
     {
         //ここの文の書き方がきもいからなんか変えたい
-        const float attackTime = 1;
+        const float attackTime = 0.8f;
         const string attackName = "攻撃カウンター";
 
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("攻撃カウンター待ち"))
