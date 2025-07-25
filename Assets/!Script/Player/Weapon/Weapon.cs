@@ -22,14 +22,15 @@ public class Weapon : MonoBehaviour
 
             if (player.ult)
             {
-                enemy.SetDamage(player.damage*2 + player.damageBonus);
+                enemy.SetDamage(player.power*2 + player.damageBonus);
             }
             else
             {
-                enemy.SetDamage(player.damage + player.damageBonus);
+                enemy.SetDamage(player.power + player.damageBonus);
             }
             
-            Instantiate(hitEffect, hitPoint, Quaternion.identity);
+            var effect = Instantiate(hitEffect, hitPoint, Quaternion.identity);
+            Destroy(effect, 3);
            // TriggerShockwave(hitPoint, enemy.gameObject);
             player.ChargeReset();
         }

@@ -14,16 +14,18 @@ public class Perk : MonoBehaviour
     bool onViews;
     public void Initialize(SkillCardData data)
     {
-        Icon = GetComponent<Sprite>();
+        transform.Find("Canvas/Icon").GetComponent<Image>().sprite = Icon;
         //Icon.sprite = data.icon;
         //cardName = data.cardName;
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+       // player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         transform.Find("Canvas/Icon").GetComponent<Image>().sprite = Icon;
+        //Icon.sprite = data.icon;
+        //cardName = data.cardName;
+        //player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
     private void Update()
     {
@@ -33,8 +35,9 @@ public class Perk : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject == player.gameObject)
+        if(other.gameObject.tag == "Player")
         {
+            player = other.GetComponentInParent<Player>();
             if (onViews) return;
             onViews = true;
             GameObject perkCard = Instantiate(perkUI, player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform);
@@ -46,8 +49,9 @@ public class Perk : MonoBehaviour
     }
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject == player.gameObject)
+        if (other.gameObject.tag == "Player")
         {
+            player = other.GetComponentInParent<Player>();
             onViews = false;
             Destroy(player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).gameObject);
         }
@@ -56,13 +60,17 @@ public class Perk : MonoBehaviour
 
     private void Buy()
     {
-        if (CoinManager.instance.coin <= 10)
+        if (player.coin <= 10)
         {
-            player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).DOShakePosition(1f,20);
+            player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).DOShakePosition(1f, 20);
             return;
         }
 
-        CoinManager.instance.coin -= 10;
+        player.coin -= 10;
 
+        GameObject perkCard = player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").GetChild(0).gameObject;
+        Text cardText = perkCard.transform.Find("Name").GetComponent<Text>();
+
+        if(cardText.text == "攻撃力") { player.SetPower(5); }
     }
 }

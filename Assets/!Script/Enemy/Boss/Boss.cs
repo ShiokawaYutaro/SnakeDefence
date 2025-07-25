@@ -105,7 +105,7 @@ public class Boss : Enemy
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         //MaxHp = UnityEngine.Random.Range(10,);
         MaxHp = 200;
-        damage = 50;
+        power = 50;
         defence = 30;
         speed = 3;
         SetUp();
@@ -185,6 +185,7 @@ public class Boss : Enemy
 
         previousAction = nextAction;
         nextState = stateMap[nextAction];
+        nextState = new ObserveState();
         await SetNextState(nextState);
     }
 
@@ -261,6 +262,56 @@ public class Boss : Enemy
         }
     }
 
+
+    public async UniTask StartObserve()
+    {
+        Transform target = player.transform; // 観察を始めたプレイヤー
+        Vector3 center = target.position; // 中心は固定
+        Vector3 right = target.right;     // プレイヤーの右方向
+
+        float offset = 0f;
+        float speed = 2f;
+        float maxOffset = 3f;
+
+        float interval = Random.Range(3, 5);
+        float time = 0;
+
+        animator.SetBool("観察", true);
+
+        while (interval > time)
+        {
+            // プレイヤーが近づいたら攻撃に移行
+            float distanceToPlayer = Vector3.Distance(transform.position, target.position);
+            if (distanceToPlayer < attackArea)
+            {
+                animator.SetBool("観察", false);
+                await SetNextState(new AttackState());
+                break;
+            }
+
+            // 左右に振れるオフセットを加算（sin波などでも良い）
+            offset += speed * Time.deltaTime;
+            float x = Mathf.Sin(offset) * maxOffset;
+
+            // 横にずれた目標座標を設定
+            Vector3 targetPos = center + right * x;
+
+            // 移動
+            Vector3 moveDir = (targetPos - transform.position).normalized;
+            transform.position += moveDir * speed * Time.deltaTime;
+
+            // プレイヤーを見るように回転
+            Vector3 lookDir = target.position - transform.position;
+            lookDir.y = 0;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDir), Time.deltaTime * 5f);
+
+            time += Time.deltaTime;
+            await UniTask.Yield();
+        }
+
+        animator.SetBool("観察", false);
+
+    }
     #region 攻撃関係
 
     /// <summary>
@@ -284,10 +335,10 @@ public class Boss : Enemy
             attackWeights[AttackType.Counter] = 30f;
             attackWeights[AttackType.TakeDistance] = 10f;
         }
-        else
-        {
-            attackWeights[AttackType.LongRange] = 1;
-        }
+        //else
+        //{
+        //    attackWeights[AttackType.LongRange] = 1;
+        //}
 
         // 同じ攻撃を避けてランダム選出
         var selectedType = GetRandomWeighted(attackWeights, lastAttackType);
@@ -461,7 +512,7 @@ public class Boss : Enemy
         animator.SetTrigger("takeDistance");
 
         // 400ms待つ
-        await UniTask.Delay(400);
+        await UniTask.Delay(200);
 
         //個々の瞬間だけ一瞬重くなる
         transform.DOLocalMove(fallPoint, 1f);
@@ -514,6 +565,7 @@ public class Boss : Enemy
         {
             if(isCounterWait)
             {
+                if (!player.attack) return;
                 isCounter = true;
             }
         }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class Player : Character
 {
@@ -11,12 +12,14 @@ public class Player : Character
     [SerializeField] GameObject damageNotation;
 
     bool down;
-    
+
+    public int coin;
 
     //public GameObject HPbar;
     public GameObject healthBar;
     public GameObject chargeBar;
     Image healthImage;
+    Image redHealthImage;
     protected Image chargeImage;
     [SerializeField]Text healthText;
     protected float chargePower;
@@ -60,30 +63,35 @@ public class Player : Character
     {
         attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
         SetUp();
-
+        
         healthImage = healthBar.transform.Find("front").GetComponent<Image>();
+        redHealthImage = healthBar.transform.Find("mid").GetComponent<Image>();
         chargeImage = chargeBar.transform.Find("front").GetComponent<Image>();
 
         chargeImage.fillAmount = 0;
+
+
     }
 
     // Update is called once per frame
     protected override void FixedUpdate()
     {
+        StetusManager.instance.SetPowerText(this);
         //itemManager = GameObject.Find("ItemManager").GetComponent<ItemManager>();
         //keyManager = GameObject.Find("KeyManager").GetComponent<KeyManager>();
-       
-        if(HP <= 0)
+
+        if (HP <= 0)
         {
             HP = 0;
             down = true;
+            SceneManager.LoadScene("Lobby");
         }
         healthBar.transform.LookAt(Camera.main.transform.position);
         healthText.text = HP.ToString("f0") + "/" + MaxHp.ToString("f0");
         if (!isAttacking)
         {
             chargeImage.fillAmount += chargePower * 0.001f;
-            damageBonus = chargeImage.fillAmount * damage;
+            damageBonus = chargeImage.fillAmount * power;
            // Debug.Log(damageBonus);
         }
 
@@ -247,7 +255,7 @@ public class Player : Character
             {
                 if (enemy.attack)
                 {
-                    SetDamage(enemy.damage);
+                    SetDamage(enemy.power);
                     enemy.attack = false;
                 }
             }
@@ -264,13 +272,17 @@ public class Player : Character
         transform.DOLookAt(targetDir,1);
     }
 
-    private void UpdateFillAmount(Image image, ref float currentRate, float targetRate, float duration)
+    private void UpdateFillAmount(Image frontImage, ref float currentRate, float targetRate, float duration, Image burnImage = null)
     {
         // 0〜1の範囲に制限
         targetRate = Mathf.Clamp01(targetRate);
 
         // DOTweenでFillAmountのアニメーション
-        image.DOFillAmount(targetRate, duration);
+        frontImage.DOFillAmount(targetRate, duration).OnComplete(() =>
+        {
+            if (burnImage == null) return;
+            burnImage.DOFillAmount(targetRate, duration).SetDelay(0.3f);
+        });
 
         // currentRateの更新
         currentRate = targetRate;
@@ -281,7 +293,7 @@ public class Player : Character
         float damage = Mathf.Max(_damage - defence, 0);
         HP -= damage;
         float targetRate = HcurrentRate - damage / MaxHp;
-        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration, redHealthImage);
 
        
 
@@ -295,7 +307,7 @@ public class Player : Character
         float actualHeal = Mathf.Min(_addHeal, MaxHp - HP); // 超えない分だけヒール
         HP += actualHeal;
         float targetRate = HcurrentRate + actualHeal / MaxHp;
-        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
+        UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration , redHealthImage);
     }
 
 
@@ -331,11 +343,18 @@ public class Player : Character
         currentLVLGauge -= maxLVLGauge;
         maxLVLGauge *= 1.5f;
         float upStatus =(float) LVL * 0.2f + 1;
-        MaxHp = MaxHp * upStatus;
+        SetStatusUP(upStatus);
         //HP = MaxHp;
         //UpdateFillAmount(healthImage, ref HcurrentRate, HP, duration);
         //damage = damage * upStatus;
         speed = speed + 0.01f * upStatus;
+    }
+
+    public void SetStatusUP(float value)
+    {
+        MaxHp *= value;
+        power += 1;
+        defence += 1;
     }
 
     public void ChargeReset()

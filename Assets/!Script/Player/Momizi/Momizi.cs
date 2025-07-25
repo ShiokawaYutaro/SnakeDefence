@@ -10,10 +10,11 @@ public class Momizi : Player
 
     protected override void Start()
     {
+        //CoinManager.instance.AddCoin(2000);
         MaxHp = 100f;
         speed = 10;
-        damage = 10;
-        defence = 100;
+        power = 10;
+        defence = 1;
         attackRadious = 1;
         attackInterval = 1;
         chargePower = 1;
@@ -46,7 +47,8 @@ public class Momizi : Player
 
     public void ULTEffect()
     {
-        Instantiate(ultEffect,transform);
+        var effect = Instantiate(ultEffect,transform);
+        Destroy(effect,3);
     }
 
     

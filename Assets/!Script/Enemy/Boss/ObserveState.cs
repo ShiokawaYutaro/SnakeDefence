@@ -17,8 +17,7 @@ public class ObserveState : BossState
 
     public override async UniTask Execute(Boss boss)
     {
-
-        await UniTask.CompletedTask;
+        await boss.StartObserve();
     }
 
     public override async UniTask Exit(Boss boss)

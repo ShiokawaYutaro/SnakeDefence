@@ -42,11 +42,11 @@ public class TailFollow : MonoBehaviour
 
             if (!enemyAtkDelays[enemy])
             {
-                enemy.SetDamage(player.damage);
+                enemy.SetDamage(player.power);
                 float poisonDamage = (player.poison * 0.01f) * enemy.HP;
                 if (poisonDamage < 0) poisonDamage = 0;
                 enemy.SetAttributeDamage(poisonDamage, player.poison, new Color32(25, 210, 0, 255));
-                float fireDamage = Random.Range(player.damage * player.fire, player.damage * player.fire * 1.5f);
+                float fireDamage = Random.Range(player.power * player.fire, player.power * player.fire * 1.5f);
                 enemy.SetAttributeDamage(fireDamage, player.fire, new Color32(255, 80, 0, 255));
 
                 enemyAtkDelays[enemy] = true;

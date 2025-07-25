@@ -13,7 +13,7 @@ public class SkillCard : MonoBehaviour
         image = GetComponent<Image>();
         image.sprite = data.icon;
         cardName = data.cardName;
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        player = transform.root.Find("body").GetComponent<Player>();
     }
 
     public void OnClick()
@@ -22,6 +22,7 @@ public class SkillCard : MonoBehaviour
         if(cardName == "ポイズン") { player.poison++; }
         if(cardName == "ファイア") { player.fire++; }
         if(cardName == "持続回復") { player.regene++; }
+        if(cardName == "攻撃力") { player.SetPower(5); }
 
         for (int i = 0; i < transform.parent.childCount; i++)
         {

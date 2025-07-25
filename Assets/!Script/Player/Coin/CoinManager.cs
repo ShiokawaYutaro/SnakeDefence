@@ -5,22 +5,22 @@ using UnityEngine.UI;
 
 public class CoinManager : MonoBehaviour
 {
-    public int coin;
     public static CoinManager instance;
-
+    Player player;
     [SerializeField] Text coinText;
 
     private void Start()
     {
         instance = this;
+        player = transform.root.Find("body").GetComponent<Player>();
     }
     private void Update()
     {
-        coinText.text = coin.ToString("f0");
+        coinText.text = player.coin.ToString("f0");
     }
     public void AddCoin(int _addCoin)
     {
-        coin += _addCoin;
+        player.coin += _addCoin;
     }
 
 }

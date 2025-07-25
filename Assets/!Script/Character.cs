@@ -11,7 +11,7 @@ public abstract class Character : MonoBehaviour
     public float HP { get; protected set; }
     protected float MaxHp;
     public float speed { get; protected set; }
-    public float damage { get; protected set; }
+    public float power { get; protected set; }
     public float defence { get; protected set; }
 
     protected Animator animator;
@@ -62,6 +62,13 @@ public abstract class Character : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
     }
+    /// <summary>
+    /// power += value;
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetPower(float value) { power += value; }
+    public float GetPower() { return power; }
+    public float GetDefence() { return defence; }
 
     /// <summary>
     /// アニメーションの終了待ち

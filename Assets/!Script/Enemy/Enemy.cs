@@ -42,13 +42,17 @@ public class Enemy : Character
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         MaxHp = UnityEngine.Random.Range(10,30) * LVL;
         
-        damage = 10;
+        power = 10;
         SetUp();
     }
 
     protected override void FixedUpdate()
     {
         if (dead) return;
+        if(transform.position.y <= -3)
+        {
+            HP = 0;
+        }
         speed = 3;
         healthImage.transform.LookAt(Camera.main.transform.position);
         rb.velocity = transform.forward * speed;
@@ -64,7 +68,6 @@ public class Enemy : Character
             dead = true;
             rb.isKinematic = true;
             player.LVLGauge(1);
-            CoinManager.instance.AddCoin(1 + LVL);
         }
         ViewAction();
         if (!isChasingPlayer)
