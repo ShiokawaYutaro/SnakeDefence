@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BossStage : MonoBehaviour
 {
-    bool startAction;
+    static public bool startAction;
     [SerializeField] Boss prefabBoss;
     Transform cameraPos;
     private void OnTriggerEnter(Collider other)

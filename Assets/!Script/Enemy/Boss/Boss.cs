@@ -6,6 +6,7 @@ using DG.Tweening;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 public enum AttackType
 {
@@ -128,6 +129,7 @@ public class Boss : Enemy
             rb.isKinematic = true;
             player.LVLGauge(1);
             CoinManager.instance.AddCoin(1 + LVL);
+            PlayerSaveManager.SaveFromBattle(player.coin);
         }
 
 
@@ -557,6 +559,7 @@ public class Boss : Enemy
     {
         Destroy(gameObject);
         GetComponent<Collider>().enabled = false;
+        SceneManager.LoadScene("Lobby");
     }
 
     private void OnTriggerStay(Collider other)

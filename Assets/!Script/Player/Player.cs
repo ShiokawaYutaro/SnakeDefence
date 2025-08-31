@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
+using Cysharp.Threading.Tasks;
 
 public class Player : Character
 {
@@ -58,34 +60,53 @@ public class Player : Character
 
     private bool isGrounded;
 
+    protected float ultInterval = 20;
+    private float ultTime;
+    public Image ultUI;
+
+    private bool CanUseULT;
+
+    private float SceneTime;
+
     // Start is called before the first frame update
     protected override void Start()
     {
         attackArea.transform.localScale = new Vector3(attackRadious, attackRadious, attackRadious);
         SetUp();
-        
+
         healthImage = healthBar.transform.Find("front").GetComponent<Image>();
         redHealthImage = healthBar.transform.Find("mid").GetComponent<Image>();
         chargeImage = chargeBar.transform.Find("front").GetComponent<Image>();
 
         chargeImage.fillAmount = 0;
 
+        var data = PlayerSaveManager.Load(coin, power, defence, MaxHp);
 
+        coin = data.coin;
+        power = data.attack;
+        defence = data.defense;
+        MaxHp = data.maxHp;
+
+        HP = MaxHp;
     }
+
+
+
 
     // Update is called once per frame
     protected override void FixedUpdate()
     {
+        if (Input.GetKey(KeyCode.P))
+        {
+            PlayerSaveManager.ResetData();
+        }
+
+
         StetusManager.instance.SetPowerText(this);
         //itemManager = GameObject.Find("ItemManager").GetComponent<ItemManager>();
         //keyManager = GameObject.Find("KeyManager").GetComponent<KeyManager>();
 
-        if (HP <= 0)
-        {
-            HP = 0;
-            down = true;
-            SceneManager.LoadScene("Lobby");
-        }
+        
         healthBar.transform.LookAt(Camera.main.transform.position);
         healthText.text = HP.ToString("f0") + "/" + MaxHp.ToString("f0");
         if (!isAttacking)
@@ -108,7 +129,21 @@ public class Player : Character
                 SetHeal(_HEAL_AMOUNT * regene);
             }
         }
-        
+
+        if (HP <= 0)
+        {
+            HP = 0;
+
+            PlayerSaveManager.SaveFromBattle(coin);
+            animator.SetTrigger("dead");
+            SceneTime += Time.deltaTime;
+            if (SceneTime > 5)
+            {
+                SceneTime = 0;
+                SceneManager.LoadScene("Lobby");
+            }
+            return;
+        }
 
         attackTime += Time.deltaTime;
 
@@ -127,6 +162,22 @@ public class Player : Character
             Camera.main.transform.rotation = Quaternion.Euler(50, 0, 0);
             Camera.main.cullingMask |= (1 << LayerMask.NameToLayer("UI"));
             StickMove();
+
+            if (!CanUseULT)
+            {
+                ultTime += Time.deltaTime;
+
+                // スキル発動処理
+                if (ultTime >= ultInterval)
+                {
+                    CanUseULT = true;
+                    ultUI.color = Color.yellow;
+                }
+
+                ultUI.fillAmount = ultTime / ultInterval;
+            }
+
+           
         }
 
        
@@ -312,14 +363,11 @@ public class Player : Character
 
 
     //ステータス関係------------------------------------------------------------------
-    void Dead()
+    public void Dead()
     {
-        if(HP < 0)
-        {
-            HP = 0;
-            down = true;
-        }
+        animator.SetTrigger("dead");
     }
+
     public void LVLGauge(float addGauge)
     {
         Image gauge = GameObject.Find("lvlGauge").GetComponent<Image>();
@@ -365,6 +413,11 @@ public class Player : Character
 
     public void UseUlt()
     {
+        if (!CanUseULT) return;
+
+        ultTime = 0;
+        ultUI.fillAmount = 0;
+        CanUseULT = false;
         ult = true;
         attack = false;
         animator.SetTrigger("ult");

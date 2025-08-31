@@ -14,6 +14,7 @@ public class Weapon : MonoBehaviour
             Enemy enemy = other.GetComponent<Enemy>();
             if (!player.attack) return;
 
+            enemy.lastAttackPlayerName = player.transform.root.name;
             // 自分のColliderを取得（例えばアタック用のコライダー）
             Collider myCollider = GetComponent<Collider>();
 
@@ -23,16 +24,19 @@ public class Weapon : MonoBehaviour
             if (player.ult)
             {
                 enemy.SetDamage(player.power*2 + player.damageBonus);
+                SEManager.Instance.PlayerULTAttackSE();
             }
             else
             {
                 enemy.SetDamage(player.power + player.damageBonus);
+                SEManager.Instance.PlayerAttackSE();
             }
             
             var effect = Instantiate(hitEffect, hitPoint, Quaternion.identity);
             Destroy(effect, 3);
            // TriggerShockwave(hitPoint, enemy.gameObject);
-            player.ChargeReset();
+            player.ChargeReset();   
+
         }
     }
 

@@ -9,10 +9,10 @@ public abstract class Character : MonoBehaviour
     protected int LVL = 1;
     //ステータス
     public float HP { get; protected set; }
-    protected float MaxHp;
-    public float speed { get; protected set; }
-    public float power { get; protected set; }
-    public float defence { get; protected set; }
+    public float MaxHp { get; set; }
+    public float speed { get;  set; }
+    public float power { get;  set; }
+    public float defence { get;  set; }
 
     protected Animator animator;
     protected Animator SkillAnim;
@@ -68,7 +68,10 @@ public abstract class Character : MonoBehaviour
     /// <param name="value"></param>
     public void SetPower(float value) { power += value; }
     public float GetPower() { return power; }
+    public void SetDefence(float value) { defence += value; }
     public float GetDefence() { return defence; }
+    public void SetMaxHP(float value) { MaxHp += value; HP = MaxHp; }
+    public float GetMaxHP() { return MaxHp; }
 
     /// <summary>
     /// アニメーションの終了待ち

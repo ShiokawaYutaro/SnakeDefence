@@ -12,6 +12,10 @@ public class MapObject : MonoBehaviour
     {
         if (other.gameObject.tag == "Player")
         {
+            Player player = other.gameObject.GetComponent<Player>();
+
+            PlayerSaveManager.SaveFromLobby(player.coin, player.power, player.defence, player.MaxHp);
+            
             SceneManager.LoadScene("Stage");
         }
     }

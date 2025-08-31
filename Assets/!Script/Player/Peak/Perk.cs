@@ -60,7 +60,7 @@ public class Perk : MonoBehaviour
 
     private void Buy()
     {
-        if (player.coin <= 10)
+        if (player.coin < 10)
         {
             player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).DOShakePosition(1f, 20);
             return;
@@ -72,5 +72,9 @@ public class Perk : MonoBehaviour
         Text cardText = perkCard.transform.Find("Name").GetComponent<Text>();
 
         if(cardText.text == "攻撃力") { player.SetPower(5); }
+        if(cardText.text == "防御力") { player.SetDefence(5); }
+        if(cardText.text == "HP") { player.SetMaxHP(50); }
+        //if(cardText.text == "Coin") { player.; }
+
     }
 }

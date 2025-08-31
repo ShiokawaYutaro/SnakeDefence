@@ -37,6 +37,12 @@ public class Enemy : Character
 
     public bool isDamaged = false;
     bool isGrounded = false;
+
+
+    public string lastAttackPlayerName;
+
+    public bool isKakasi;
+
     protected override void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
@@ -49,7 +55,8 @@ public class Enemy : Character
     protected override void FixedUpdate()
     {
         if (dead) return;
-        if(transform.position.y <= -3)
+        if (isKakasi) return;
+        if (transform.position.y <= -3)
         {
             HP = 0;
         }
@@ -353,5 +360,8 @@ public class Enemy : Character
         Destroy(gameObject);
         GetComponent<Collider>().enabled = false;
         enemySpawn.enemyList.Remove(this);
+
+        Player player = GameObject.Find(lastAttackPlayerName).transform.Find("body").GetComponent<Player>();
+        player.coin += 10;
     }
 }

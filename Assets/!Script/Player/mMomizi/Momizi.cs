@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.ParticleSystem;
+using UnityEngine.SceneManagement;
 
 public class Momizi : Player
 {
@@ -13,6 +13,7 @@ public class Momizi : Player
         //CoinManager.instance.AddCoin(2000);
         MaxHp = 100f;
         speed = 10;
+        coin = 0;
         power = 10;
         defence = 1;
         attackRadious = 1;
@@ -27,6 +28,12 @@ public class Momizi : Player
         for (int i = 0; i < effects.Length; i++)
         {
             effects[i].transform.localScale = new Vector3(chargeImage.fillAmount, chargeImage.fillAmount, chargeImage.fillAmount);
+        }
+
+        if (Input.GetKey(KeyCode.R))
+        {
+            
+            SceneManager.LoadScene(PlayerSaveManager.LobbyScene);
         }
         
     }
