@@ -33,20 +33,35 @@ public class Perk : MonoBehaviour
         this.transform.position = new Vector3(transform.position.x, transform.position.y + sin * 0.001f, transform.position.z);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private GameObject perkCard; // 生成したカードを保持
+
+    private void OnTriggerStay(Collider other)
     {
-        if(other.gameObject.tag == "Player")
+        if (other.CompareTag("Player"))
         {
             player = other.GetComponentInParent<Player>();
-            if (onViews) return;
-            onViews = true;
-            GameObject perkCard = Instantiate(perkUI, player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform);
-            perkCard.GetComponentInChildren<Button>().onClick.AddListener(Buy);
-            perkCard.transform.Find("Icon").GetComponent<Image>().sprite = Icon;
-            perkCard.transform.Find("Name").GetComponent<Text>().text = perkName;
+
+            // まだ生成していなければ生成
+            if (perkCard == null)
+            {
+                perkCard = Instantiate(
+                    perkUI,
+                    player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform
+                );
+
+                perkCard.GetComponentInChildren<Button>().onClick.AddListener(Buy);
+                perkCard.transform.Find("Icon").GetComponent<Image>().sprite = Icon;
+                perkCard.transform.Find("Name").GetComponent<Text>().text = perkName;
+            }
+
+            // 色の更新だけは毎フレーム行う
+            if (player.coin < 10)
+                perkCard.GetComponent<Image>().color = Color.red;
+            else
+                perkCard.GetComponent<Image>().color = new Color(0f, 1f, 0.22f); // 0-1範囲に修正
         }
-        
     }
+
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "Player")
@@ -63,6 +78,7 @@ public class Perk : MonoBehaviour
         if (player.coin < 10)
         {
             player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").transform.GetChild(0).DOShakePosition(1f, 20);
+            SEManager.Instance.NoCanBuySE();
             return;
         }
 
@@ -70,8 +86,9 @@ public class Perk : MonoBehaviour
 
         GameObject perkCard = player.transform.parent.Find("ゲーム画面/ボタン関係/パーク選択").GetChild(0).gameObject;
         Text cardText = perkCard.transform.Find("Name").GetComponent<Text>();
+        SEManager.Instance.CanBuySE();
 
-        if(cardText.text == "攻撃力") { player.SetPower(5); }
+        if (cardText.text == "攻撃力") { player.SetPower(5); }
         if(cardText.text == "防御力") { player.SetDefence(5); }
         if(cardText.text == "HP") { player.SetMaxHP(50); }
         //if(cardText.text == "Coin") { player.; }

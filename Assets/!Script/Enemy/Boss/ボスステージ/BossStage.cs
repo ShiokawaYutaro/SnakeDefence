@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BossStage : MonoBehaviour
 {
+    [SerializeField] GameObject nextStage;
     static public bool startAction;
     [SerializeField] Boss prefabBoss;
     Transform cameraPos;
@@ -13,7 +14,7 @@ public class BossStage : MonoBehaviour
         {
             if (startAction) return;
             startAction = true;
-
+            nextStage.SetActive(true);
             var boss = Instantiate(prefabBoss ,transform.position,Quaternion.identity);
 
         }

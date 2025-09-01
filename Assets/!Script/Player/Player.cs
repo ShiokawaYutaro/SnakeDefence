@@ -120,16 +120,7 @@ public class Player : Character
         Text text = GameObject.Find("lvlText").GetComponent<Text>();
         text.text = "Lv" + LVL.ToString();
 
-        if(HP < MaxHp && regene >= 1)
-        {
-            healTime += Time.deltaTime;
-            if (healTime > 10)
-            {
-                healTime = 0;
-                SetHeal(_HEAL_AMOUNT * regene);
-            }
-        }
-
+        
         if (HP <= 0)
         {
             HP = 0;
@@ -143,6 +134,16 @@ public class Player : Character
                 SceneManager.LoadScene("Lobby");
             }
             return;
+        }
+
+        if (HP < MaxHp && regene >= 1)
+        {
+            healTime += Time.deltaTime;
+            if (healTime > 10)
+            {
+                healTime = 0;
+                SetHeal(_HEAL_AMOUNT * regene);
+            }
         }
 
         attackTime += Time.deltaTime;
@@ -341,7 +342,8 @@ public class Player : Character
 
     public void SetDamage(float _damage)
     {
-        float damage = Mathf.Max(_damage - defence, 0);
+        SEManager.Instance.EnemyAttackSE();
+        float damage = Mathf.Max(_damage - defence, 0.1f);
         HP -= damage;
         float targetRate = HcurrentRate - damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration, redHealthImage);
@@ -385,7 +387,8 @@ public class Player : Character
     }
 
     public virtual void LVLUP()
-    {       
+    {
+        SEManager.Instance.LVLUPSE();
         LVL++;
         SkillCardManager.instance.StartDraw();
         currentLVLGauge -= maxLVLGauge;
