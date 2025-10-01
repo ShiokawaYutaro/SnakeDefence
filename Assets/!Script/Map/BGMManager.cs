@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class BGMManager : MonoBehaviour
 {
+    public AudioClip StartClip;    
     public AudioClip LobbyClip;    
     public AudioClip StageClip;   
     public AudioClip BossClip;   
@@ -17,11 +18,12 @@ public class BGMManager : MonoBehaviour
         BossStage.startAction = false;
         audioSource = gameObject.AddComponent<AudioSource>();
 
+        if (SceneManager.GetActiveScene().name == "Start") { audioSource.clip = StartClip; }
         if (SceneManager.GetActiveScene().name == "Lobby") { audioSource.clip = LobbyClip; }
         if (SceneManager.GetActiveScene().name == "Stage") { audioSource.clip = StageClip; }
 
         audioSource.loop = true;      // ループ再生
-        audioSource.volume = 0.03f;    // 音量(0〜1)
+        audioSource.volume = 0.3f;    // 音量(0〜1)
         audioSource.Play();           // 再生開始
     }
 
@@ -32,7 +34,7 @@ public class BGMManager : MonoBehaviour
             BossBGMPlay = true;
             audioSource.clip = BossClip;
             audioSource.loop = true;      // ループ再生
-            audioSource.volume = 0.01f;    // 音量(0〜1)
+            audioSource.volume = 0.1f;    // 音量(0〜1)
             audioSource.Play();           // 再生開始
         }
     }

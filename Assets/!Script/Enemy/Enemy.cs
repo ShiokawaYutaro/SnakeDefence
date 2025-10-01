@@ -313,13 +313,13 @@ public class Enemy : Character
     public void SetDamage(float _damage)
     {
         if(dead) return;
-        float damage = Mathf.Max(_damage - defence, 0);
+        float damage = Mathf.Max(_damage - defence, 0.1f);
         HP -= damage;
-        float targetRate = HcurrentRate - _damage / MaxHp;
+        float targetRate = HcurrentRate - damage / MaxHp;
         UpdateFillAmount(healthImage, ref HcurrentRate, targetRate, duration);
         GameObject damageText = Instantiate(damageNotation, transform.Find("UI/healthImage"));
         damageText.GetComponent<Text>().color = new Color32(255,255,255,255) ;
-        damageText.GetComponent<Text>().text = _damage.ToString("f1");
+        damageText.GetComponent<Text>().text = damage.ToString("f1");
         Destroy(damageText, 1);
 
     }

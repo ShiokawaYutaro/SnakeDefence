@@ -116,7 +116,7 @@ public class Boss : Enemy
     {
         //死んでたらリターン
         if (dead) return;
-        StateTick().Forget();
+        
 
         healthImage.transform.LookAt(Camera.main.transform.position);
 
@@ -135,6 +135,11 @@ public class Boss : Enemy
 
     }
 
+    private void LateUpdate()
+    {
+        StateTick().Forget();
+    }
+
     /// <summary>
     /// アクションを実行する時間
     /// </summary>
@@ -145,7 +150,7 @@ public class Boss : Enemy
         if (action) return false;
 
         actionTime += Time.deltaTime;
-        float actionInterval = UnityEngine.Random.Range(5, 10);
+        float actionInterval = UnityEngine.Random.Range(3, 7);
         if (actionTime >= actionInterval)
         {
             actionTime = 0;
@@ -505,7 +510,7 @@ public class Boss : Enemy
         //後ろの距離を取る地点の取得
         Vector3 fallPoint = transform.localPosition + -transform.forward * 4f;
 
-        if (!CheckGrounded(fallPoint / 2))
+        if (!CheckGrounded(fallPoint/4))
         {
             Debug.Log("後ろには飛べない");
             return;
