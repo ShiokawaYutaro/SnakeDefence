@@ -4575,6 +4575,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Momizi
       objectReference: {fileID: 0}
+    - target: {fileID: 2586899802164755592, guid: 37c82c0cf0b0ed648ac068f33c855f82, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3389565962689042304, guid: 37c82c0cf0b0ed648ac068f33c855f82, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -4615,6 +4619,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5195546849795123910, guid: 37c82c0cf0b0ed648ac068f33c855f82, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: a0b84e5a1cbc639499fd305cf6ec736e, type: 2}
     - target: {fileID: 5249894789607003502, guid: 37c82c0cf0b0ed648ac068f33c855f82, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
